@@ -6,7 +6,7 @@ utils::globalVariables(
 #' This function is an efficient wrapper that fits the needed gamma regressions,
 #' performs multiple imputation and testing with limma (see \code{\link[limma]{limmaUsersGuide}}).
 #' It is an efficient wrapper that generates need inputs for imputation and
-#' running \code{\link[pair]{run_limma_and_lfc}} with the possibility of using
+#' running \code{\link[mavis]{run_limma}} with the possibility of using
 #' \code{\link[multidplyr]{multidplyr-package}} to paralellize the computation.
 #' It also calls produces the mean-variance trends if `plot_trend` is `TRUE`.
 #'
@@ -22,13 +22,17 @@ utils::globalVariables(
 #'    \code{\link[multidplyr]{multidplyr-package}}.
 #' @param id_col A character for the name of the column containing the
 #'     name of the features in data (e.g., peptides, proteins, etc.).
+#' @param .robust Input to limma robust option
+#' @param weights logical value if weights should be used.
 #' @param plot_trend Should the mean-variance trend with the gamma regression be
 #'  plotted?
-#' @param .robust Input to limma robust option
+#' @param formula_imputation Formula for the regression model used for imputation
+#' @param formula_weights Formula for the regression model used for weights
+#' @param ... Additional arguments to \code{\link[mavis]{trend_partitioning}}
 #'
 #' @return A tibble with each imputation as a row. The first column contains the
 #'     imputation number, the second contains the imputed data, and the last
-#'     column contains the results produced by \code{\link[mavis]{run_limma_and_lfc}}.
+#'     column contains the results produced by \code{\link[mavis]{run_limma}}.
 #' @export
 #'
 #' @importFrom utils globalVariables
@@ -37,7 +41,7 @@ utils::globalVariables(
 #' # Generate a design matrix for the data
 #' design <- model.matrix(~ 0 + factor(rep(1:2, each = 3)))
 #'
-#' # Set correct colnames, this is important for fit_gamma_*
+#' # Set correct colnames, this is important.
 #' colnames(design) <- paste0("ng", c(50, 100))
 #'
 #' # Generate the contrast matrix
@@ -49,7 +53,7 @@ utils::globalVariables(
 #' # Normalize and log-transform the data
 #' yeast <- psrn(yeast_prog, "identifier")
 #' \dontrun{
-#' results <- multiple_imputation_and_limma(yeast, design, contrast, 1000, 5, "identifier", TRUE)
+#' results <- multiple_imputation_and_limma(yeast, design, contrast, 1000, 5, "identifier")
 #' }
 multiple_imputation_and_limma <- function(data,
                          design,
@@ -58,14 +62,28 @@ multiple_imputation_and_limma <- function(data,
                          workers = 1,
                          id_col = "id",
                          .robust = TRUE,
-                         plot_trend = FALSE) {
+                         weights = TRUE,
+                         plot_trend = FALSE,
+                         formula_imputation = sd ~ mean,
+                         formula_weights = sd ~ mean,
+                         ...) {
   # Fit gamma models
   data <- data %>%
     calculate_mean_sd_trends(design)
-  gamma_reg_models <- fit_gamma_regression(data, design)
-  gamma_reg_weights <- gamma_reg_models$weights
+  if(!'c' %in% names(data) & 'c' %in% as.character(formula_imputation)){
+    data <- data %>%
+      trend_partitioning(desing, formula_partition, ...)
+  }
+  gamma_reg_imp <- fit_gamma_regression(data, formula_imputation)
+  if(formula_imputation == formula_weights & weights){
+    gamma_reg_weights <- fit_gamma_regression(data, formula_weights)
+  } else if(weights){
+    gamma_reg_weights <- gamma_reg_imp
+  } else{
+    gamma_reg_weights <- NULL
+  }
   if (plot_trend) {
-    plot_gamma_regression(data, design, id_col = id_col)
+    plot_gamma_regression(data, design, ...)
   }
   # Generate imputation input
   LOQ <- data %>%
@@ -74,19 +92,19 @@ multiple_imputation_and_limma <- function(data,
     {stats::quantile(., .25, na.rm = T) - 1.5*stats::IQR(., na.rm = T)} %>%
     unname()
   col_order <- names(data)
-  missing_data <- data %>%
-    dplyr::filter(dplyr::if_any(where(is.numeric), is.na))
-  char_cols <- missing_data %>%
-    purrr::keep(is.character)
   conditions <- design %>%
     get_conditions()
-  impute_nested <- data %>%
-    prep_data_for_imputation(conditions, gamma_reg_models$imputation, LOQ)
+  missing_data <- data %>%
+    dplyr::filter(dplyr::if_any(matches(conditions), is.na))
+  char_cols <- missing_data %>%
+    purrr::keep(is.character)
+  impute_nested <- missing_data %>%
+    prep_data_for_imputation(conditions, gamma_reg_imp, LOQ)
   # Generate results
   ## Non-missing data
   non_miss_result <- data %>%
-    tidyr::drop_na(where(is.numeric)) %>%
-    run_limma_and_lfc(design, contrast_matrix, gamma_reg_weights, id_col, .robust = .robust)
+    tidyr::drop_na(matches(conditions)) %>%
+    run_limma(design, contrast_matrix, gamma_reg_weights, id_col, .robust = .robust)
   if (workers != 1) {
     cluster <- multidplyr::new_cluster(workers)
     multidplyr::cluster_library(
@@ -131,12 +149,13 @@ multiple_imputation_and_limma <- function(data,
       # Run imputation
       imputed_data = purrr::map(
         imputation,
-        ~ impute(impute_nested, char_cols, col_order)
+        ~ impute(impute_nested, col_order) %>%
+          bind_imputation(char_cols, conditions)
       ),
       # Run limma
       limma_results = purrr::map(
         imputed_data,
-        run_limma_and_lfc,
+        run_limma,
         design, contrast_matrix, gamma_reg_weights, id_col, NULL, .robust = .robust
       ),
       # Bind non-missing data
@@ -152,4 +171,13 @@ multiple_imputation_and_limma <- function(data,
       dplyr::arrange(imputation)
   }
   return(results)
+}
+
+
+bind_imputation <- function(imputation, char_cols, match_cols) {
+  imputation %>%
+    purrr::map(
+      ~ .x[grepl(match_cols, names(.x))]
+    ) %>%
+    dplyr::bind_cols(char_cols, .)
 }

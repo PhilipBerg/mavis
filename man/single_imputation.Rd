@@ -39,6 +39,8 @@ yeast <- yeast_prog \%>\%
 gam_reg <- fit_gamma_regression(yeast, sd ~ mean)
 
 # Run the imputation
+\dontrun{
 yeast \%>\%
   single_imputation(design, gam_reg)
+}
 }

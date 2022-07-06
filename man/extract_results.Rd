@@ -15,7 +15,7 @@ extract_results(
 )
 }
 \arguments{
-\item{results}{The output from \code{\link[pair]{multiple_imputation_and_limma}}.}
+\item{results}{The output from \code{\link[mavis]{multiple_imputation_and_limma}}.}
 
 \item{data}{The data used to generate the results when calling
 \code{\link[mavis]{multiple_imputation_and_limma}}.}
@@ -44,7 +44,7 @@ boolean column, imputed, indicating if there was any imputed value or not.
 \description{
 Does p-value correction and then binomial testing on a given decision.
 Could be a hybrid decision on both p-value and LFC. Assumes that the decision
-for each imputation and feature can be considered a bernoulli trial. Therefore,
+for each imputation and feature can be considered a Bernoulli trial. Therefore,
 the sum of decisions from all imputations has a binomial distribution. It
 therefore implements a right-tailed binomial testing with default null
 hypothesis p = 0.5. It uses the right tail because significant features are

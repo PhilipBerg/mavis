@@ -12,7 +12,11 @@ multiple_imputation_and_limma(
   workers = 1,
   id_col = "id",
   .robust = TRUE,
-  plot_trend = FALSE
+  weights = TRUE,
+  plot_trend = FALSE,
+  formula_imputation = sd ~ mean,
+  formula_weights = sd ~ mean,
+  ...
 )
 }
 \arguments{
@@ -35,19 +39,27 @@ name of the features in data (e.g., peptides, proteins, etc.).}
 
 \item{.robust}{Input to limma robust option}
 
+\item{weights}{logical value if weights should be used.}
+
 \item{plot_trend}{Should the mean-variance trend with the gamma regression be
 plotted?}
+
+\item{formula_imputation}{Formula for the regression model used for imputation}
+
+\item{formula_weights}{Formula for the regression model used for weights}
+
+\item{...}{Additional arguments to \code{\link[mavis]{trend_partitioning}}}
 }
 \value{
 A tibble with each imputation as a row. The first column contains the
 imputation number, the second contains the imputed data, and the last
-column contains the results produced by \code{\link[mavis]{run_limma_and_lfc}}.
+column contains the results produced by \code{\link[mavis]{run_limma}}.
 }
 \description{
 This function is an efficient wrapper that fits the needed gamma regressions,
 performs multiple imputation and testing with limma (see \code{\link[limma]{limmaUsersGuide}}).
 It is an efficient wrapper that generates need inputs for imputation and
-running \code{\link[pair]{run_limma_and_lfc}} with the possibility of using
+running \code{\link[mavis]{run_limma}} with the possibility of using
 \code{\link[multidplyr]{multidplyr-package}} to paralellize the computation.
 It also calls produces the mean-variance trends if \code{plot_trend} is \code{TRUE}.
 }
@@ -55,7 +67,7 @@ It also calls produces the mean-variance trends if \code{plot_trend} is \code{TR
 # Generate a design matrix for the data
 design <- model.matrix(~ 0 + factor(rep(1:2, each = 3)))
 
-# Set correct colnames, this is important for fit_gamma_*
+# Set correct colnames, this is important.
 colnames(design) <- paste0("ng", c(50, 100))
 
 # Generate the contrast matrix
@@ -67,6 +79,6 @@ contrast <- limma::makeContrasts(
 # Normalize and log-transform the data
 yeast <- psrn(yeast_prog, "identifier")
 \dontrun{
-results <- multiple_imputation_and_limma(yeast, design, contrast, 1000, 5, "identifier", TRUE)
+results <- multiple_imputation_and_limma(yeast, design, contrast, 1000, 5, "identifier")
 }
 }

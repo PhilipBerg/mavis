@@ -104,7 +104,7 @@ cluster_missing_sd <- function(clustered_data, data, design_matrix, formula, eps
     dplyr::select(dplyr::matches(get_conditions(design_matrix))) %>%
     unlist() %>%
     sd(na.rm = T)
-  gam_mod <- glm(sd ~ mean + c, Gamma(log), clustered_data)
+  gam_mod <- stats::glm(sd ~ mean + c, stats::Gamma(log), clustered_data)
   data %>%
     dplyr::filter(is.na(sd)) %>%
     dplyr::mutate(

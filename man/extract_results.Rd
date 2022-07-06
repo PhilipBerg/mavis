@@ -15,10 +15,10 @@ extract_results(
 )
 }
 \arguments{
-\item{results}{The output from \code{\link[pair]{run_pipeline}}.}
+\item{results}{The output from \code{\link[pair]{multiple_imputation_and_limma}}.}
 
 \item{data}{The data used to generate the results when calling
-\code{\link[mavis]{run_pipeline}}.}
+\code{\link[mavis]{multiple_imputation_and_limma}}.}
 
 \item{alpha}{The alpha value to decide when a feature is significant.}
 
@@ -66,7 +66,7 @@ contrast <- limma::makeContrasts(
 # Normalize and log-transform the data
 yeast <- psrn(yeast_prog, "identifier")
 \dontrun{
-results <- run_pipeline(yeast, design, contrast, 1000, 5, "identifier", TRUE)
+results <- multiple_imputation_and_limma(yeast, design, contrast, 1000, 5, "identifier", TRUE)
 extract_results(yeast, results, .05, 1, "fdr", "identifier")
 }
 }

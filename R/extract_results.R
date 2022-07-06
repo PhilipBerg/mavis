@@ -11,15 +11,15 @@ utils::globalVariables(
 #'
 #' Does p-value correction and then binomial testing on a given decision.
 #' Could be a hybrid decision on both p-value and LFC. Assumes that the decision
-#' for each imputation and feature can be considered a bernoulli trial. Therefore,
+#' for each imputation and feature can be considered a Bernoulli trial. Therefore,
 #' the sum of decisions from all imputations has a binomial distribution. It
 #' therefore implements a right-tailed binomial testing with default null
 #' hypothesis p = 0.5. It uses the right tail because significant features are
 #' expected to have a larger p then the null hypothesis.
 #'
 #' @param data The data used to generate the results when calling
-#'   \code{\link[mavis]{run_pipeline}}.
-#' @param results The output from \code{\link[pair]{run_pipeline}}.
+#'   \code{\link[mavis]{multiple_imputation_and_limma}}.
+#' @param results The output from \code{\link[mavis]{multiple_imputation_and_limma}}.
 #' @param alpha The alpha value to decide when a feature is significant.
 #' @param abs_lfc If a LFC cut-off values should be used in addition to the
 #'     alpha value.
@@ -37,7 +37,7 @@ utils::globalVariables(
 #'     boolean column, imputed, indicating if there was any imputed value or not.
 #' @export
 #'
-#' @import utils
+#' @importFrom utils globalVariables
 #'
 #' @examples
 #' # Generate a design matrix for the data
@@ -55,7 +55,7 @@ utils::globalVariables(
 #' # Normalize and log-transform the data
 #' yeast <- psrn(yeast_prog, "identifier")
 #' \dontrun{
-#' results <- run_pipeline(yeast, design, contrast, 1000, 5, "identifier", TRUE)
+#' results <- multiple_imputation_and_limma(yeast, design, contrast, 1000, 5, "identifier", TRUE)
 #' extract_results(yeast, results, .05, 1, "fdr", "identifier")
 #' }
 extract_results <- function(results,

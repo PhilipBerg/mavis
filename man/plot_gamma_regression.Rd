@@ -4,15 +4,14 @@
 \alias{plot_gamma_regression}
 \title{Function for plotting the mean-variance gamma regressions}
 \usage{
-plot_gamma_regression(data, design, id_col = "id")
+plot_gamma_regression(data, design, ...)
 }
 \arguments{
 \item{data}{The data to use for producing the plots.}
 
 \item{design}{A design matrix as produced by \code{\link[stats]{model.matrix}}.}
 
-\item{id_col}{A character for the name of the column containing the
-name of the features in data (e.g., peptides, proteins, etc.).}
+\item{...}{Additional arguments to \code{\link[mavis]{trend_partitioning}}.}
 }
 \value{
 a plot with the mean-variance trend used for the precision
@@ -32,5 +31,7 @@ colnames(design) <- paste0("ng", c(50, 100))
 yeast <- psrn(yeast_prog, "identifier")
 
 # Generate the plots
-plot_gamma_regression(yeast, design, "identifier")
+\dontrun{
+plot_gamma_regression(yeast, design, verbose = FALSE)
+}
 }

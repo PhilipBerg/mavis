@@ -8,15 +8,12 @@ utils::globalVariables(c(".", "sd", "model"))
 #'
 #' @param data The data to use for producing the plots.
 #' @param design A design matrix as produced by \code{\link[stats]{model.matrix}}.
-#' @param id_col A character for the name of the column containing the
-#'     name of the features in data (e.g., peptides, proteins, etc.).
+#' @param ... Additional arguments to \code{\link[mavis]{trend_partitioning}}.
 #'
 #' @return a plot with the mean-variance trend used for the precision
 #' weights on the left side, and the trend lines used for the imputation on the
 #' right side.
 #' @export
-#'
-#' @import utils
 #'
 #' @examples
 #' # Produce a design matrix
@@ -27,13 +24,17 @@ utils::globalVariables(c(".", "sd", "model"))
 #' yeast <- psrn(yeast_prog, "identifier")
 #'
 #' # Generate the plots
-#' plot_gamma_regression(yeast, design, "identifier")
-plot_gamma_regression <- function(data, design, id_col = "id") {
-  precision_plot <- data %>%
-    plot_gamma_precision(design, id_col)
-  imputation_plot <- data %>%
-    plot_gamma_imputation(design, id_col)
-  plots <- cowplot::plot_grid(precision_plot, imputation_plot)
+#' \dontrun{
+#' plot_gamma_regression(yeast, design, verbose = FALSE)
+#' }
+plot_gamma_regression <- function(data, design, ...) {
+  data <- data %>%
+    calculate_mean_sd_trends(design)
+  base_plot <- data %>%
+    plot_gamma()
+  part_plot <- data %>%
+    plot_gamma_partition(design, ...)
+  plots <- cowplot::plot_grid(base_plot, part_plot)
   title <- cowplot::ggdraw() +
     cowplot::draw_label("Mean-Variance trends", fontface = "bold")
   cowplot::plot_grid(
@@ -52,11 +53,14 @@ plot_mean_sd_trend <- function(data) {
       method = stats::glm,
       formula = y ~ x,
       method.args = list(family = stats::Gamma(log)),
-      fullrange = TRUE
+      fullrange = TRUE,
+      se = F,
+      color = 'grey'
     ) +
     ggplot2::theme_classic() +
-    ggplot2::xlab(expression(hat(mu))) +
-    ggplot2::ylab(expression(hat(sigma)))
+    ggplot2::labs(
+      x = expression(bold(bar(y))), y = expression(bold(s))
+    )
 }
 
 #' Function for plotting the gamma regression used for mean-variance normalization
@@ -65,9 +69,6 @@ plot_mean_sd_trend <- function(data) {
 #' trends for the precision weights
 #'
 #' @param data The data to use for producing the plots.
-#' @param design A design matrix as produced by \code{\link[stats]{model.matrix}}.
-#' @param id_col A character for the name of the column containing the
-#'     name of the features in data (e.g., peptides, proteins, etc.).
 #'
 #' @return a plot with the mean-variance trend used for the precision
 #' weights.
@@ -82,13 +83,14 @@ plot_mean_sd_trend <- function(data) {
 #' yeast <- psrn(yeast_prog, "identifier")
 #'
 #' # Generate the plot
-#' plot_gamma_precision(yeast, design, "identifier")
-plot_gamma_precision <- function(data, design, id_col) {
+#' yeast %>%
+#'   calculate_mean_sd_trends(design) %>%
+#'   plot_gamma()
+plot_gamma <- function(data) {
   data %>%
-    prep_data_for_gamma_weight_regression(design, id_col) %>%
     tidyr::drop_na() %>%
     plot_mean_sd_trend() +
-    ggplot2::ggtitle("For precision weights")
+    ggplot2::ggtitle("Before Partitioning")
 }
 
 #' Function for plotting the gamma regression used for imputation
@@ -98,8 +100,7 @@ plot_gamma_precision <- function(data, design, id_col) {
 #'
 #' @param data The data to use for producing the plots.
 #' @param design A design matrix as produced by \code{\link[stats]{model.matrix}}.
-#' @param id_col A character for the name of the column containing the
-#'     name of the features in data (e.g., peptides, proteins, etc.).
+#' @param ... Additional arguments to \code{\link[mavis]{trend_partitioning}}.
 #'
 #' @return a plot with the mean-variance trend used for the trend lines used in
 #'  the imputation.
@@ -114,12 +115,37 @@ plot_gamma_precision <- function(data, design, id_col) {
 #' yeast <- psrn(yeast_prog, "identifier")
 #'
 #' # Generate the plot
-#' plot_gamma_imputation(yeast, design, "identifier")
-plot_gamma_imputation <- function(data, design, id_col) {
+#' \dontrun{
+#' yeast %>%
+#'   calculate_mean_sd_trends(design) %>%
+#'   plot_gamma_partition(design, verbose = FALSE)
+#' }
+plot_gamma_partition <- function(data, design, ...) {
+  if(!'c' %in% names(data)){
+    data <- data %>%
+      trend_partitioning(design, ...)
+  }
+  trend_colors <- purrr::set_names(viridisLite::turbo(2, end = .75), c('Lower', 'Upper'))
+  gam_reg <- fit_gamma_regression(data)
   data %>%
-    prep_data_for_gamma_imputation_regression(design, id_col) %>%
+    dplyr::mutate(
+      c = plyr::mapvalues(c, c('L', 'U'), c('Lower', 'Upper'))
+    ) %>%
     tidyr::drop_na() %>%
-    plot_mean_sd_trend() +
-    ggplot2::facet_wrap(name ~ .) +
-    ggplot2::ggtitle("For imputation")
+    ggplot2::ggplot(ggplot2::aes(mean, sd, color = c)) +
+    ggplot2::geom_point(size = 1 / 10) +
+    ggplot2::theme_classic() +
+    ggplot2::stat_function(
+      fun = ~stats::predict.glm(gam_reg, newdata = data.frame(mean = .x, c = 'L'), type = 'response'), color = 'blue'
+    ) +
+    ggplot2::stat_function(
+      fun = ~stats::predict.glm(gam_reg, newdata = data.frame(mean = .x, c = 'U'), type = 'response'), color = 'red'
+    ) +
+    ggplot2::theme_classic() +
+    ggplot2::ggtitle("After Partitioning") +
+    ggplot2::scale_color_manual('Trend', values = trend_colors) +
+    ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size=2))) +
+    ggplot2::labs(
+      x = expression(bold(bar(y))), y = expression(bold(s))
+    )
 }

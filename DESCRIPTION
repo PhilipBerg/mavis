@@ -35,10 +35,12 @@ Imports:
     tibble,
     tidyr,
     tidyselect,
-    glue,
     statmod,
     stats,
     methods,
+    plyr,
+    viridisLite,
+    glue,
     Rdpack
 RdMacros: Rdpack
 LinkingTo: 

@@ -1,3 +1,4 @@
+utils::globalVariables("mean_condi")
 #' Single imputation
 #'
 #' Performs a single imputation run and returns the data with NA values replaced
@@ -8,9 +9,7 @@
 #' @param design a design or model matrix as produced by
 #'  \code{\link[stats]{model.matrix}} with column names corresponding to the
 #'  different conditions.
-#' @param id_col a character for the name of the column containing the
-#'     name of the features in data (e.g., peptides, proteins, etc.).
-#'
+#' @param gam_reg a gamma regression model
 #' @return a `data.frame` with `NA` values replaced by imputed values.
 #' @export
 #'
@@ -21,14 +20,21 @@
 #' # Set correct colnames, this is important for fit_gamma_weights
 #' colnames(design) <- paste0("ng", c(50, 100))
 #'
-#' yeast_prog %>%
+#' yeast <- yeast_prog %>%
 #'   # Normalize and log-transform the data
 #'   psrn("identifier") %>%
-#'   # Run the imputation
-#'   single_imputation(design, "identifier")
+#'   # Get mean-variance trends
+#'   calculate_mean_sd_trends(design)
+#' # Fit gamma regression
+#' gam_reg <- fit_gamma_regression(yeast, sd ~ mean)
+#'
+#' # Run the imputation
+#' \dontrun{
+#' yeast %>%
+#'   single_imputation(design, gam_reg)
+#' }
 single_imputation <- function(data,
                               design,
-                              id_col = "id",
                               gam_reg) {
   conditions <- design %>%
     get_conditions()

@@ -11,9 +11,7 @@ calc_weights(data, gamma_reg_model)
 precision weights.}
 
 \item{gamma_reg_model}{a \code{glm} object as produced by
-\code{fit_gamma_regressions} or \code{fit_gamma_weights},
-see \code{\link[mavis]{Mean-Variance_Gamma_Regressions}} for details.
-Any \code{glm} object with \code{formula} \code{sd ~ mean} is valid.}
+see \code{\link[mavis]{fit_gamma_regression}} for details.}
 }
 \value{
 The same \code{data.frame} but with all quantitative values replaced by
@@ -23,9 +21,9 @@ their precision weights.
 Calculates the precision weights for each measurement.
 }
 \details{
-\code{calc_weights} takes as input a data frame and a \code{glm} object produced
-by e.g., \code{fit_gamma_regressions} or \code{fit_gamma_weights},
-see \code{\link[mavis]{Mean-Variance_Gamma_Regressions}} for details.
+\code{calc_weights} takes as input a data frame and a \code{\link[stats]{glm}}  object produced
+by fit_gamma_regression,
+see \code{\link[mavis]{fit_gamma_regression}} for details.
 For all numeric columns, it predicts the standard deviation using the gamma
 regression. It then squares and takes the reciprocal of each value to generate the
 precision weights.
@@ -38,10 +36,12 @@ design <- model.matrix(~ 0 + factor(rep(1:2, each = 3)))
 colnames(design) <- paste0("ng", c(50, 100))
 
 # Normalize and log-transform the data
-yeast <- psrn(yeast_prog, "identifier")
+yeast <- psrn(yeast_prog, "identifier") \%>\%
+  # Add row means and variances
+  calculate_mean_sd_trends(design)
 
 # Fit the gamma regression model for the mean-variance trend
-gamma_model <- fit_gamma_weights(yeast, design, "identifier")
+gamma_model <- fit_gamma_regression(yeast, sd ~ mean)
 
 # Generate the weights for the yeast data
 calc_weights(yeast, gamma_model)

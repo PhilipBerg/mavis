@@ -3,7 +3,7 @@
 #' @param data A `tibble` or `data.frame`
 #' @param identifier Id column
 #' @param design_matrix Cell mean design matrix for the data
-#' @param gam_mod A gamma regression model
+#' @param gam_reg A gamma regression model
 #'
 #' @return A matrix with the uncertainty
 #' @export

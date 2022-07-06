@@ -3,7 +3,7 @@
 #' @description Estimates the priors for the Bayesian model.
 #' @param data A `tibble` or `data.frame` to add gamma priors to
 #' @param design_matrix A design matrix for the data (see example)
-#' @param formula Formula for the Gamma regression
+#' @param gamma_reg A Gamma regression object
 #'
 #' @return A `tibble` or `data.frame` with the alpha,beta priors
 #' @export

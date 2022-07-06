@@ -63,7 +63,9 @@ contrast <- limma::makeContrasts(
 yeast <- psrn(yeast_prog, "identifier")
 
 # Fit the gamma regressions
-gamma_reg_model <- fit_gamma_weights(yeast, design, "identifier")
+gamma_reg_model <- yeast \%>\%
+  calculate_mean_sd_trends(design) \%>\%
+  fit_gamma_regression(formula = sd ~ mean)
 
 # Exemplify on the non-missing data
 yeast <- tidyr::drop_na(yeast)

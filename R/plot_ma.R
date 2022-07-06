@@ -19,7 +19,7 @@ utils::globalVariables(c("significant", "median_lfc"))
 #' @return a `ggplot2` of the distribution of the hits.
 #' @export
 #'
-#' @import utils
+#' @importFrom utils globalVariables
 #'
 #' @examples
 #' # Generate a design matrix for the data

@@ -31,7 +31,7 @@ utils::globalVariables(
 #'     column contains the results produced by \code{\link[mavis]{run_limma_and_lfc}}.
 #' @export
 #'
-#' @import utils
+#' @importFrom utils globalVariables
 #'
 #' @examples
 #' # Generate a design matrix for the data
@@ -60,7 +60,9 @@ multiple_imputation_and_limma <- function(data,
                          .robust = TRUE,
                          plot_trend = FALSE) {
   # Fit gamma models
-  gamma_reg_models <- fit_gamma_regressions(data, design, id_col = id_col)
+  data <- data %>%
+    calculate_mean_sd_trends(design)
+  gamma_reg_models <- fit_gamma_regression(data, design)
   gamma_reg_weights <- gamma_reg_models$weights
   if (plot_trend) {
     plot_gamma_regression(data, design, id_col = id_col)

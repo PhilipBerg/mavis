@@ -25,7 +25,7 @@ utils::globalVariables(c("where", "value", "ref", "all_of"))
 #'    estimated normalization factors.
 #' @export
 #' @importFrom dplyr .data
-#' @import utils
+#' @importFrom utils globalVariables
 #'
 #' @examples
 #' yeast_psrn <- psrn(yeast_prog, "identifier")
@@ -106,7 +106,6 @@ utils::globalVariables(c("load_size", "lfc", "A", "w"))
 #'    normalized data and one containing the loading info as well as the
 #'    estimated normalization factors.
 #' @export
-#' @import utils
 #'
 #' @examples
 #' tmm(yeast_prog)

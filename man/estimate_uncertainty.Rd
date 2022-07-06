@@ -13,7 +13,7 @@ estimate_uncertainty(data, identifier, design_matrix, gam_reg)
 
 \item{design_matrix}{Cell mean design matrix for the data}
 
-\item{gam_mod}{A gamma regression model}
+\item{gam_reg}{A gamma regression model}
 }
 \value{
 A matrix with the uncertainty

@@ -1,6 +1,7 @@
 ---
-title: "mult-imp"
+title: "Multiple Imputation and limma"
 output: rmarkdown::html_vignette
+author: "Philip Berg"
 vignette: >
   %\VignetteIndexEntry{mult-imp}
   %\VignetteEngine{knitr::rmarkdown}

@@ -4,7 +4,7 @@
 \alias{single_imputation}
 \title{Single imputation}
 \usage{
-single_imputation(data, design, id_col = "id", gam_reg)
+single_imputation(data, design, gam_reg)
 }
 \arguments{
 \item{data}{a \code{data.frame} to perform the imputation on, missing values should
@@ -14,8 +14,7 @@ be \code{NA}.}
 \code{\link[stats]{model.matrix}} with column names corresponding to the
 different conditions.}
 
-\item{id_col}{a character for the name of the column containing the
-name of the features in data (e.g., peptides, proteins, etc.).}
+\item{gam_reg}{a gamma regression model}
 }
 \value{
 a \code{data.frame} with \code{NA} values replaced by imputed values.
@@ -31,9 +30,15 @@ design <- model.matrix(~ 0 + factor(rep(1:2, each = 3)))
 # Set correct colnames, this is important for fit_gamma_weights
 colnames(design) <- paste0("ng", c(50, 100))
 
-yeast_prog \%>\%
+yeast <- yeast_prog \%>\%
   # Normalize and log-transform the data
   psrn("identifier") \%>\%
-  # Run the imputation
-  single_imputation(design, "identifier")
+  # Get mean-variance trends
+  calculate_mean_sd_trends(design)
+# Fit gamma regression
+gam_reg <- fit_gamma_regression(yeast, sd ~ mean)
+
+# Run the imputation
+yeast \%>\%
+  single_imputation(design, gam_reg)
 }

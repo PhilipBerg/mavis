@@ -11,7 +11,7 @@ estimate_gamma_priors(data, design_matrix, gamma_reg)
 
 \item{design_matrix}{A design matrix for the data (see example)}
 
-\item{formula}{Formula for the Gamma regression}
+\item{gamma_reg}{A Gamma regression object}
 }
 \value{
 A \code{tibble} or \code{data.frame} with the alpha,beta priors

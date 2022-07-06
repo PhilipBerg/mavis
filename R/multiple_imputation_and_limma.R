@@ -72,7 +72,7 @@ multiple_imputation_and_limma <- function(data,
     calculate_mean_sd_trends(design)
   if(!'c' %in% names(data) & 'c' %in% as.character(formula_imputation)){
     data <- data %>%
-      trend_partitioning(desing, formula_partition, ...)
+      trend_partitioning(design, ...)
   }
   gamma_reg_imp <- fit_gamma_regression(data, formula_imputation)
   if(formula_imputation == formula_weights & weights){
@@ -95,7 +95,7 @@ multiple_imputation_and_limma <- function(data,
   conditions <- design %>%
     get_conditions()
   missing_data <- data %>%
-    dplyr::filter(dplyr::if_any(matches(conditions), is.na))
+    dplyr::filter(dplyr::if_any(dplyr::matches(conditions), is.na))
   char_cols <- missing_data %>%
     purrr::keep(is.character)
   impute_nested <- missing_data %>%

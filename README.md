@@ -4,22 +4,22 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of mavis is to ...
-
 ## Installation
 
 You can install the development version of mavis like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+require(devtools)
+devtools::install_github(" PhilipBerg/mavis", build_vignettes = TRUE)
 ```
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+See the vignets for examples:
 
 ``` r
 library(mavis)
-## basic example code
+## See vignets for examples
+vignette('baldur-tutorial') # For running Baldur
+vignette('mult-imp') # For running multiple imputation and limma
 ```
-

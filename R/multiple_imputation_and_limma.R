@@ -56,29 +56,29 @@ utils::globalVariables(
 #' results <- multiple_imputation_and_limma(yeast, design, contrast, 1000, 5, "identifier")
 #' }
 multiple_imputation_and_limma <- function(data,
-                         design,
-                         contrast_matrix,
-                         imputations,
-                         workers = 1,
-                         id_col = "id",
-                         .robust = TRUE,
-                         weights = TRUE,
-                         plot_trend = FALSE,
-                         formula_imputation = sd ~ mean,
-                         formula_weights = sd ~ mean,
-                         ...) {
+                                          design,
+                                          contrast_matrix,
+                                          imputations,
+                                          workers = 1,
+                                          id_col = "id",
+                                          .robust = TRUE,
+                                          weights = TRUE,
+                                          plot_trend = FALSE,
+                                          formula_imputation = sd ~ mean,
+                                          formula_weights = sd ~ mean,
+                                          ...) {
   # Fit gamma models
   data <- data %>%
     calculate_mean_sd_trends(design)
-  if(!'c' %in% names(data) & 'c' %in% as.character(formula_imputation)){
+  if(!'c' %in% names(data) & any(stringr::str_detect(as.character(formula_imputation), 'c'))){
     data <- data %>%
       trend_partitioning(design, ...)
   }
   gamma_reg_imp <- fit_gamma_regression(data, formula_imputation)
   if(formula_imputation == formula_weights & weights){
-    gamma_reg_weights <- fit_gamma_regression(data, formula_weights)
-  } else if(weights){
     gamma_reg_weights <- gamma_reg_imp
+  } else if(weights){
+    gamma_reg_weights <- fit_gamma_regression(data, formula_weights)
   } else{
     gamma_reg_weights <- NULL
   }
@@ -103,7 +103,7 @@ multiple_imputation_and_limma <- function(data,
   # Generate results
   ## Non-missing data
   non_miss_result <- data %>%
-    tidyr::drop_na(matches(conditions)) %>%
+    tidyr::drop_na(dplyr::matches(conditions)) %>%
     run_limma(design, contrast_matrix, gamma_reg_weights, id_col, .robust = .robust)
   if (workers != 1) {
     cluster <- multidplyr::new_cluster(workers)
@@ -149,8 +149,8 @@ multiple_imputation_and_limma <- function(data,
       # Run imputation
       imputed_data = purrr::map(
         imputation,
-        ~ impute(impute_nested, col_order) %>%
-          bind_imputation(char_cols, conditions)
+        ~ impute(impute_nested) %>%
+          bind_imputation(conditions, col_order)
       ),
       # Run limma
       limma_results = purrr::map(
@@ -174,10 +174,11 @@ multiple_imputation_and_limma <- function(data,
 }
 
 
-bind_imputation <- function(imputation, char_cols, match_cols) {
-  imputation %>%
+bind_imputation <- function(imputation, match_cols, order) {
+  imputation[-1] %>%
     purrr::map(
-      ~ .x[grepl(match_cols, names(.x))]
+      ~ .x[grep(match_cols, names(.x))],
     ) %>%
-    dplyr::bind_cols(char_cols, .)
+    dplyr::bind_cols(imputation[1], .) %>%
+    magrittr::extract(order)
 }

@@ -46,9 +46,6 @@ single_imputation <- function(data,
   order <- data %>%
     colnames()
   data <- data %>%
-    dplyr::mutate(
-      mean = rowMeans(dplyr::across(dplyr::matches(conditions)), na.rm = T)
-    ) %>%
     prep_data_for_imputation(conditions, gam_reg, LOQ)
   aux_cols <- data[[1]] %>%
     dplyr::select(-c(mean_condi, data))
@@ -56,7 +53,7 @@ single_imputation <- function(data,
     purrr::map(
       dplyr::select, c(sd, mean_condi, data)
     ) %>%
-    impute(order) %>%
+    impute() %>%
     purrr::map(
       dplyr::select, -c(sd, mean_condi)
     ) %>%
@@ -65,7 +62,7 @@ single_imputation <- function(data,
 }
 
 
-impute <- function(data, order) {
+impute <- function(data) {
   data %>%
     purrr::map(
       dplyr::mutate,
@@ -81,7 +78,7 @@ impute_nest <- function(data, condition, gamma_reg_model, LOQ) {
         mean_condi = rowMeans(dplyr::across(dplyr::contains(condition)), na.rm = T),
         mean_condi = tidyr::replace_na(mean_condi, LOQ)
       )
-    data[["sd"]] <- stats::predict(gamma_reg_model, data, type = "response")
+    data[["sd"]] <- stats::predict.glm(gamma_reg_model, data, type = "response")
     data %>%
       tidyr::nest(data = dplyr::contains(condition))
   } else {

@@ -11,7 +11,10 @@ sample_posterior(
   contrast_matrix,
   uncertainty_matrix,
   bayesian_model = stanmodels$uncertainty_model,
-  clusters = 1
+  clusters = 1,
+  warmup = 1000,
+  iter = 2000,
+  chains = 4
 )
 }
 \arguments{
@@ -28,6 +31,12 @@ sample_posterior(
 \item{bayesian_model}{Which Bayesian model to use. Currently only on internal model allowed, this argument is for forward compatibility}
 
 \item{clusters}{The number of parallel threads to run on.}
+
+\item{warmup}{Number of warmup samples to draw from the model}
+
+\item{iter}{Total number of iterations to draw (i.e., iter - warmup = posterior draws)}
+
+\item{chains}{The number of chains to sample from}
 }
 \value{
 A \code{tibble} or \code{data.frame} annotated  with statistics of the posterior

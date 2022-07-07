@@ -2,6 +2,7 @@ utils::globalVariables(c("tmp"))
 #' Sample Posterior
 #'
 #' @description Function to sample the posterior of the Bayesian decision model.
+#'
 #' @param data A `tibble` or `data.frame` with alpha,beta priors annotated
 #' @param id_col_name A character of the id column
 #' @param design_matrix A design matrix for the data (see example)
@@ -9,12 +10,25 @@ utils::globalVariables(c("tmp"))
 #' @param uncertainty_matrix A matrix of observation uncertainty
 #' @param bayesian_model Which Bayesian model to use. Currently only on internal model allowed, this argument is for forward compatibility
 #' @param clusters The number of parallel threads to run on.
+#' @param warmup Number of warmup samples to draw from the model
+#' @param iter Total number of iterations to draw (i.e., iter - warmup = posterior draws)
+#' @param chains The number of chains to sample from
 #'
 #' @return A `tibble` or `data.frame` annotated  with statistics of the posterior
 #' @export
 #'
 #' @examples # Please see vignette('baldur') for examples
-sample_posterior <- function(data, id_col_name, design_matrix, contrast_matrix, uncertainty_matrix, bayesian_model = stanmodels$uncertainty_model, clusters = 1){
+sample_posterior <- function(
+    data,
+    id_col_name,
+    design_matrix,
+    contrast_matrix,
+    uncertainty_matrix,
+    bayesian_model = stanmodels$uncertainty_model,
+    clusters = 1,
+    warmup = 1000,
+    iter = 2000,
+    chains = 4){
   N <- sum(design_matrix)
   K <- ncol(design_matrix)
   C <- nrow(contrast_matrix)
@@ -69,7 +83,8 @@ sample_posterior <- function(data, id_col_name, design_matrix, contrast_matrix, 
     dplyr::mutate(
       tmp = purrr::pmap(!!pmap_columns,
                         bayesian_testing,
-                        ori_data, id_col_name, design_matrix, contrast_matrix, bayesian_model, N, K, C, uncertainty_matrix
+                        ori_data, id_col_name, design_matrix, contrast_matrix, bayesian_model, N, K, C, uncertainty_matrix,
+                        warmup, iter, chains
       )
     ) %>%
     dplyr::collect() %>%
@@ -107,7 +122,7 @@ stan_summary <- function(fit, condi, C, dat){
   summ <- rstan::summary(fit) %>%
     magrittr::use_series(summary)
   summ <- summ[
-    rownames(summ) %in% c(lfc_pars, err_pars, 'sigma'),
+    rownames(summ) %in% c(lfc_pars, err_pars, 'sigma', 'lp__'),
     colnames(summ) %in% c('mean', '2.5%', '97.5%', 'n_eff', 'Rhat', '50%')
   ]
   summ <- summ[1:nrow(summ), c(1:2, 4:6, 3)]
@@ -118,7 +133,6 @@ stan_summary <- function(fit, condi, C, dat){
     err_975 = summ[rownames(summ) %in% err_pars, 3],
     err_eff = summ[rownames(summ) %in% err_pars, 4],
     err_rhat = summ[rownames(summ) %in% err_pars, 5],
-    err_med = summ[rownames(summ) %in% err_pars, 6],
     lfc = summ[rownames(summ) %in% lfc_pars, 1],
     lfc_025 = summ[rownames(summ) %in% lfc_pars, 2],
     lfc_975 = summ[rownames(summ) %in% lfc_pars, 3],
@@ -129,13 +143,38 @@ stan_summary <- function(fit, condi, C, dat){
     sigma_975 = summ[rownames(summ) == 'sigma', 3],
     sigma_eff = summ[rownames(summ) == 'sigma', 4],
     sigma_rhat = summ[rownames(summ) == 'sigma', 5],
+    lp__ = summ[rownames(summ) == 'lp__', 1],
+    lp___025 = summ[rownames(summ) == 'lp__', 2],
+    lp___975 = summ[rownames(summ) == 'lp__', 3],
+    lp___eff = summ[rownames(summ) == 'lp__', 4],
+    lp___rhat = summ[rownames(summ) == 'lp__', 5]
   )
 }
 
-bayesian_testing <- function(id, alpha, beta, data, id_col_name, design_matrix, comparison, model, N, K, C, uncertainty = NULL){
+bayesian_testing <- function(
+    id,
+    alpha,
+    beta,
+    data,
+    id_col_name,
+    design_matrix,
+    comparison,
+    model,
+    N,
+    K,
+    C,
+    uncertainty = NULL,
+    warmup,
+    iter,
+    chains){
   condi <- colnames(design_matrix)
   condi_regex <- paste0(condi, collapse = '|')
   dat <- generate_stan_data_input(id, id_col_name, design_matrix, data, uncertainty, comparison, N, K, C, alpha, beta, condi, condi_regex)
-  rstan::sampling(object = model, data = dat, verbose = F, refresh = 0, warmup = 1000, iter = 2000, chains = 4) %>%
+  fit <- purrr::quietly(rstan::sampling)(object = model, data = dat, verbose = F, refresh = 0, warmup = warmup, iter = iter, chains = chains)
+  if(length(fit$warnings) != 0){
+    cat(fit$warnings, '\n')
+    cat('Divergent transition for:\n', id, '\n')
+  }
+  fit$result %>%
     stan_summary(condi, C, dat)
 }

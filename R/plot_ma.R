@@ -77,6 +77,6 @@ plot_ma <- function(hits, data = NULL, id_col = NULL, alpha = NULL, abs_lfc = NU
     ggplot2::geom_point(size = 1 / 2) +
     ggplot2::theme_bw() +
     ggplot2::facet_wrap(comparison ~ .) +
-    ggplot2::xlab(expression(hat(mu))) +
+    ggplot2::xlab(expression(bar(Y))) +
     ggplot2::ylab("LFC")
 }

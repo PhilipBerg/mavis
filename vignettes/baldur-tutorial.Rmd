@@ -59,16 +59,24 @@ Next we perform imputation:
 yeast_cluster_imp <- yeast_cluster %>% 
   single_imputation(yeast_design, gam_reg)
 ```
+After imputation we re-estimate the mean-variance trends and re-fit the gamma model:
+```{r, reeset}
+yeast_cluster_imp <- yeast_cluster_imp %>% 
+  calculate_mean_sd_trends(yeast_design)
+gam_reg_imp <- yeast_cluster_imp %>% 
+  fit_gamma_regression()
+```
 Finally, we estimate the parameters needed for `baldur`:
 ```{r,priors}
 # Estimate gamma priors
 yeast_cluster_imp <- yeast_cluster_imp %>% 
-  estimate_gamma_priors(design_matrix = yeast_design, gam_reg)
+  estimate_gamma_priors(design_matrix = yeast_design, gam_reg_imp)
 # Get each data points uncertainty
 yeast_unc <- yeast_cluster_imp %>% 
-  estimate_uncertainty('identifier', design_matrix = yeast_design, gam_reg)
+  estimate_uncertainty('identifier', design_matrix = yeast_design, gam_reg_imp)
 ```
 # 3. Run the sampling procedure
+Side note: I highly recommend running `baldur` with the parallel implementation in next section due to the massive speed up.
 Finally we sample the posterior of each row in the data as follows:
 ```{r, posterior}
 yeast_results <- yeast_cluster_imp %>% 
@@ -86,8 +94,7 @@ yeast_results %>%
 ```
 Here `err` is the probability of error, i.e., the tail-density supporting the null-hypothesis, `lfc` is the estimated log$_2$-fold change, and `sigma` is the common variance.
 Columns without suffix shows the mean estimate from the posterior, while the suffixes `_025`, `_975`, and `_med` are the 2.5, 97.5, and 50.0 percentiles, respectively.
-The suffixes `_eff` and `_rhat` are the diagnostic variables returned by `rstan` (please see the Stan manual for details).
-Still, I highly suggest running the sampling with parallel computation if possible (this will produce a very large increase in speed).
+The suffixes `_eff` and `_rhat` and the prefix `lp__` are the diagnostic variables returned by `rstan` (please see the Stan manual for details).
 
 # 4. Sampling with parallel computation
 As of now, Rstan models compiled with a package cannot be ran in parallel using the `multidplyr` backend.

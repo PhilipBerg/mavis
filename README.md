@@ -5,8 +5,8 @@
 <!-- badges: end -->
 
 ## Installation
-
-You can install the development version of mavis like so:
+Note that `mavis` is currently only supported for `R` versions 4.0.X 
+You can install the development version of `mavis` as follows:
 
 ``` r
 require(devtools)

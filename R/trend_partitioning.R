@@ -28,9 +28,13 @@ trend_partitioning <- function(data, design_matrix, formula = sd ~ mean + c, eps
     cur_data <- cur_data$data %>%
       run_procedure(formula, eps = eps, n = n)
   }
+  if(any(is.na(cur_data$data$sd))) {
   cur_data$data %>%
     cluster_missing_sd(data, design_matrix, formula, eps, n) %>%
     dplyr::select(-c(betal, betau, intl, intu, alpha))
+  } else {
+    cur_data$data
+  }
 }
 
 prep_data_for_clustering <- function(data, design_matrix, eps = .1, n = 1000){

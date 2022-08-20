@@ -4,9 +4,9 @@ files <- list.files('data-raw/', pattern = '\\.csv', recursive = T, full.names =
 files <- setNames(
   files,
   paste0(
-    rep(c('ramus', 'ups', 'yeast'), each = 2),
+    c('ups', 'yeast'),
     '_',
-    rep(c('max', 'prog'), times = 3)
+    rep(c('prog'), times = 2)
   )
 )
 # Assign to global environment
@@ -20,8 +20,8 @@ purrr::map(files, readr::read_csv) %>%
   )
 
 # Attach to package
-usethis::use_data(ramus_max, ups_max, yeast_max, yeast_prog, overwrite = TRUE)
-usethis::use_data(ramus_prog, ups_prog, overwrite = TRUE, compress = 'xz')
+usethis::use_data(yeast_prog, overwrite = TRUE)
+usethis::use_data(ups_prog, overwrite = TRUE, compress = 'xz')
 
 # Clean up global environment
 rm(list = names(files))

@@ -38,6 +38,8 @@ colnames(yeast_design)
 ```
 This is essential for `mavis` to know which columns to use in calculations and to perform transformations on.
 
+Sidenote: other datasets can be downloaded from figshare (link will be added on publication).
+
 # 2. Mixture separation, prior estimation, and uncertainty estimation
 The first step is to add the mean-variance trends to our data matrix:
 ```{r, mv}

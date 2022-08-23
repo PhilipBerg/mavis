@@ -4,7 +4,7 @@
 \alias{fit_gamma_regression}
 \title{Functions for Fitting the Mean-Variance Gamma Regression Models}
 \usage{
-fit_gamma_regression(data, formula = sd ~ mean + c)
+fit_gamma_regression(data, formula = sd ~ mean + c, ...)
 }
 \arguments{
 \item{data}{a \code{data.frame} to generate the mean-variance trends for. It
@@ -12,6 +12,8 @@ should contain columns with conditions named as the column names in
 \code{design} (presumably with some suffix).}
 
 \item{formula}{a formula describing the model}
+
+\item{...}{only for compatability with other functions}
 }
 \value{
 \code{fit_gamma_regression} returns a glm object

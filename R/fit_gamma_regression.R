@@ -8,6 +8,8 @@
 #'     `design` (presumably with some suffix).
 #' @param formula a formula describing the model
 #'
+#' @param ... only for compatability with other functions
+#'
 #' @return `fit_gamma_regression` returns a glm object
 #' @export
 #'
@@ -25,6 +27,6 @@
 #'
 #' # Fit all gamma regression models for the mean-variance trends
 #' gamma_model <- fit_gamma_regression(yeast, sd ~ mean)
-fit_gamma_regression <- function(data, formula = sd ~ mean + c) {
+fit_gamma_regression <- function(data, formula = sd ~ mean + c, ...) {
     stats::glm(formula, stats::Gamma(log), data)
 }

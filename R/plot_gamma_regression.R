@@ -126,7 +126,9 @@ plot_gamma_partition <- function(data, design, ...) {
       trend_partitioning(design, ...)
   }
   trend_colors <- purrr::set_names(viridisLite::turbo(2, end = .75), c('Lower', 'Upper'))
-  gam_reg <- fit_gamma_regression(data)
+  gam_reg <- rlang::eval_tidy(
+    rlang::call2(fit_gamma_regression, data = data, !!!rlang::dots_list(...))
+  )
   data %>%
     dplyr::mutate(
       c = plyr::mapvalues(c, c('L', 'U'), c('Lower', 'Upper'))

@@ -30,7 +30,7 @@ yeast <- yeast_prog \%>\%
     # Get mean-variance trends
     calculate_mean_sd_trends(design)
 # Fit gamma regression
-gam_reg <- fit_gamma_regression(yeast)
+gam_reg <- fit_gamma_regression(yeast, mean ~ sd)
 
 # Estimate priors
 yeast \%>\%

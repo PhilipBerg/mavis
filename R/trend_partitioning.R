@@ -101,7 +101,7 @@ num_int_trapz <- function(sd, alpha, beta, eps, n){
 }
 
 estimate_beta <- function(model, mean, c, alpha){
-  if(is.function(c)){
+  if(!is.function(c)){
     alpha / stats::predict.glm(model, newdata = data.frame(mean = mean, c = c), type = 'response')
   } else{
     alpha / stats::predict.glm(model, newdata = data.frame(mean = mean), type = 'response')

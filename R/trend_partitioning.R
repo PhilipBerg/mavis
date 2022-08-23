@@ -29,12 +29,13 @@ trend_partitioning <- function(data, design_matrix, formula = sd ~ mean + c, eps
       run_procedure(formula, eps = eps, n = n)
   }
   if(any(is.na(cur_data$data$sd))) {
-  cur_data$data %>%
-    cluster_missing_sd(data, design_matrix, formula, eps, n) %>%
-    dplyr::select(-c(betal, betau, intl, intu, alpha))
+    out <- cur_data$data %>%
+      cluster_missing_sd(data, design_matrix, formula, eps, n)
   } else {
-    cur_data$data
+    out <-  cur_data$data
   }
+  out %>%
+    dplyr::select(-c(betal, betau, intl, intu, alpha))
 }
 
 prep_data_for_clustering <- function(data, design_matrix, eps = .1, n = 1000){
@@ -100,7 +101,11 @@ num_int_trapz <- function(sd, alpha, beta, eps, n){
 }
 
 estimate_beta <- function(model, mean, c, alpha){
-  alpha / stats::predict.glm(model, newdata = data.frame(mean = mean, c = c), type = 'response')
+  if(is.function(c)){
+    alpha / stats::predict.glm(model, newdata = data.frame(mean = mean, c = c), type = 'response')
+  } else{
+    alpha / stats::predict.glm(model, newdata = data.frame(mean = mean), type = 'response')
+  }
 }
 
 cluster_missing_sd <- function(clustered_data, data, design_matrix, formula, eps, n){

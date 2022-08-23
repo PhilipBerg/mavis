@@ -8,7 +8,22 @@
 #' @return A `tibble` or `data.frame` with the alpha,beta priors
 #' @export
 #'
-#' @examples # Please see vignette('baldur') for examples
+#' @examples
+#' # Setup model matrix
+#' design <- model.matrix(~ 0 + factor(rep(1:2, each = 3)))
+#' colnames(design) <- paste0("ng", c(50, 100))
+#'
+#' # Normalize data
+#' yeast <- yeast_prog %>%
+#'     psrn("identifier") %>%
+#'     # Get mean-variance trends
+#'     calculate_mean_sd_trends(design)
+#' # Fit gamma regression
+#' gam_reg <- fit_gamma_regression(yeast)
+#'
+#' # Estimate priors
+#' yeast %>%
+#'     estimate_gamma_priors(design, gam_reg)
 estimate_gamma_priors <- function(data, design_matrix, gamma_reg){
   data %>%
     dplyr::mutate(

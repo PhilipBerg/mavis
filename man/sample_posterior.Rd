@@ -32,7 +32,7 @@ sample_posterior(
 
 \item{clusters}{The number of parallel threads to run on.}
 
-\item{warmup}{Number of warmup samples to draw from the model}
+\item{warmup}{Number of warm-up samples to draw from the model}
 
 \item{iter}{Total number of iterations to draw (i.e., iter - warmup = posterior draws)}
 
@@ -43,6 +43,11 @@ A \code{tibble} or \code{data.frame} annotated  with statistics of the posterior
 }
 \description{
 Function to sample the posterior of the Bayesian decision model.
+Note that, \code{sample_posterior} will remove missing values and adjust the inputs
+to the Stan model accordingly. If all values in a condition is missing for a
+row/peptide, then that will be removed for that row/peptide.
+Still, if there is only one condition that has observed values, \code{sample_posterior}
+will crash. Please make sure to impute or filter out these cases.
 }
 \examples{
 # Please see vignette('baldur') for examples

@@ -2,6 +2,11 @@ utils::globalVariables(c("tmp"))
 #' Sample Posterior
 #'
 #' @description Function to sample the posterior of the Bayesian decision model.
+#' Note that, `sample_posterior` will remove missing values and adjust the inputs
+#' to the Stan model accordingly. If all values in a condition is missing for a
+#' row/peptide, then that will be removed for that row/peptide.
+#' Still, if there is only one condition that has observed values, `sample_posterior`
+#' will crash. Please make sure to impute or filter out these cases.
 #'
 #' @param data A `tibble` or `data.frame` with alpha,beta priors annotated
 #' @param id_col_name A character of the id column
@@ -10,7 +15,7 @@ utils::globalVariables(c("tmp"))
 #' @param uncertainty_matrix A matrix of observation uncertainty
 #' @param bayesian_model Which Bayesian model to use. Currently only on internal model allowed, this argument is for forward compatibility
 #' @param clusters The number of parallel threads to run on.
-#' @param warmup Number of warmup samples to draw from the model
+#' @param warmup Number of warm-up samples to draw from the model
 #' @param iter Total number of iterations to draw (i.e., iter - warmup = posterior draws)
 #' @param chains The number of chains to sample from
 #'
@@ -28,13 +33,13 @@ sample_posterior <- function(
     clusters = 1,
     warmup = 1000,
     iter = 2000,
-    chains = 4){
+    chains = 4) {
   N <- sum(design_matrix)
   K <- ncol(design_matrix)
   C <- nrow(contrast_matrix)
   pmap_columns <- rlang::expr(list(!!rlang::sym(id_col_name), alpha, beta))
   ori_data <- data
-  if(clusters != 1){
+  if(clusters != 1) {
     #### ####
     cl <- multidplyr::new_cluster(clusters)
     multidplyr::cluster_library(cl,
@@ -67,7 +72,7 @@ sample_posterior <- function(
                              )
     )
     model_check <- stringr::word(deparse(substitute(bayesian_model)), 2, sep = '\\$')
-    if(!is.na(model_check)){
+    if(!is.na(model_check)) {
       multidplyr::cluster_copy(cl,
                                paste0(
                                  "rstantools_model_",
@@ -91,13 +96,15 @@ sample_posterior <- function(
     tidyr::unnest(tmp)
 }
 
-generate_stan_data_input <- function(id, id_col_name, design_matrix, data, uncertainty, comparison, N, K, C, alpha, beta, condi, condi_regex){
-  row <- data[data[[id_col_name]] == id, stringr::str_detect(names(data), condi_regex)]
+generate_stan_data_input <- function(id, id_col_name, design_matrix, data, uncertainty, comparison, N, K, C, alpha, beta, condi, condi_regex) {
+  row <- data[
+    data[[id_col_name]] == id, stringr::str_detect(names(data), condi_regex)
+  ]
   xbar <- purrr::map_dbl(purrr::set_names(condi, condi),
                          ~as.numeric(row[stringr::str_which(colnames(row), .x)]) %>%
-                           mean()
+                           mean(na.rm = T)
   )[condi]
-  if(is.null(uncertainty)){
+  if(is.null(uncertainty)) {
     u = rep(1,N)
   }else{
     u = uncertainty[id,]
@@ -116,7 +123,30 @@ generate_stan_data_input <- function(id, id_col_name, design_matrix, data, uncer
   )
 }
 
-stan_summary <- function(fit, condi, C, dat){
+modify_stan_input_for_missingingess <- function(stan_input) {
+  na_idx <- which(is.na(stan_input$y))
+  stan_input$x <- stan_input$x[-na_idx,]
+  stan_input$y <- stan_input$y[-na_idx]
+  stan_input$u <- stan_input$u[-na_idx]
+  stan_input$N <- stan_input$N - length(na_idx)
+  miss_condi_idx <- which(colSums(stan_input$x) == 0)
+  lng_miss <- length(miss_condi_idx)
+  if(lng_miss != 0) {
+    stan_input$x <- stan_input$x[, -miss_condi_idx, drop = F]
+    stan_input$xbar <- stan_input$xbar[-miss_condi_idx]
+    stan_input$K <- stan_input$K - lng_miss
+    stan_input$c <- stan_input$c[
+      -which(stan_input$c == miss_condi_idx, arr.ind = T)[,1],, drop = F
+    ]
+    for (i in miss_condi_idx) {
+      stan_input$c[stan_input$c > i] <- stan_input$c[stan_input$c > i] - 1
+    }
+    stan_input$C <- nrow(stan_input$c)
+  }
+  return(stan_input)
+}
+
+stan_summary <- function(fit, condi, C, dat) {
   lfc_pars <- paste0('y_diff[', seq_len(C), ']')
   err_pars <- paste0('error[', seq_len(C), ']')
   summ <- rstan::summary(fit) %>%
@@ -166,12 +196,17 @@ bayesian_testing <- function(
     uncertainty = NULL,
     warmup,
     iter,
-    chains){
+    chains) {
   condi <- colnames(design_matrix)
   condi_regex <- paste0(condi, collapse = '|')
   dat <- generate_stan_data_input(id, id_col_name, design_matrix, data, uncertainty, comparison, N, K, C, alpha, beta, condi, condi_regex)
+  if(any(is.na(dat$y))) {
+    dat <- modify_stan_input_for_missingingess(dat)
+    condi <- colnames(dat$x)
+    condi_regex <- paste0(condi, collapse = '|')
+  }
   fit <- purrr::quietly(rstan::sampling)(object = model, data = dat, verbose = F, refresh = 0, warmup = warmup, iter = iter, chains = chains)
-  if(length(fit$warnings) != 0){
+  if(length(fit$warnings) != 0) {
     cat(fit$warnings, '\n')
     cat('Divergent transition for:\n', id, '\n')
   }

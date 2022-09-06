@@ -102,9 +102,8 @@ multiple_imputation_and_limma <- function(data,
     prep_data_for_imputation(conditions, gamma_reg_imp, LOQ)
   # Generate results
   ## Non-missing data
-  non_miss_result <- data %>%
-    tidyr::drop_na(dplyr::matches(conditions)) %>%
-    run_limma(design, contrast_matrix, gamma_reg_weights, id_col, .robust = .robust)
+  non_miss_data <- data %>%
+    tidyr::drop_na(dplyr::matches(conditions))
   if (workers != 1) {
     cluster <- multidplyr::new_cluster(workers)
     multidplyr::cluster_library(
@@ -130,8 +129,7 @@ multiple_imputation_and_limma <- function(data,
         "contrast_matrix",
         "gamma_reg_weights",
         "calc_weights",
-        "impute_nested",
-        "non_miss_result",
+        "non_miss_data",
         "id_col"
       )
     )
@@ -150,19 +148,14 @@ multiple_imputation_and_limma <- function(data,
       imputed_data = purrr::map(
         imputation,
         ~ impute(impute_nested) %>%
-          bind_imputation(conditions, col_order)
+          bind_imputation(conditions, col_order) %>%
+          bind_rows(non_miss_data)
       ),
       # Run limma
       limma_results = purrr::map(
         imputed_data,
         run_limma,
         design, contrast_matrix, gamma_reg_weights, id_col, NULL, .robust = .robust
-      ),
-      # Bind non-missing data
-      limma_results = purrr::map(
-        limma_results,
-        dplyr::bind_rows,
-        non_miss_result
       )
     )
   if (workers != 1) {

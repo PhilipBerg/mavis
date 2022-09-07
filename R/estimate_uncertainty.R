@@ -16,7 +16,7 @@ estimate_uncertainty <- function(data, identifier, design_matrix, gam_reg){
       newdata = data.frame(mean = ., c = c),
       type = "response"
     )
-  }else{
+  } else {
     pred <- ~predict.glm(
       gam_reg,
       newdata = data.frame(mean = .),

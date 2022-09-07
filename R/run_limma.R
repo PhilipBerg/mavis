@@ -70,7 +70,7 @@ run_limma <- function(data,
   condi <- design %>%
     get_conditions()
   data <- data %>%
-    dplyr::select(tidyr::matches(condi)) %>%
+    dplyr::select(tidyr::matches(condi), dplyr::any_of('c')) %>%
     as.data.frame()
   rownames(data) <- row_names
   # Run LIMMA
@@ -97,6 +97,7 @@ run_limma <- function(data,
     trend <- TRUE
   }
   data <- data %>%
+    dplyr::select(-dplyr::any_of('c')) %>%
     as.matrix()
   hits <- limma::lmFit(data, design, weights = weights) %>%
     limma::contrasts.fit(contrast_matrix) %>%

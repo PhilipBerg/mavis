@@ -70,12 +70,13 @@ run_limma <- function(data,
   condi <- design %>%
     get_conditions()
   data <- data %>%
-    dplyr::select(tidyr::matches(condi)) %>%
+    dplyr::select(tidyr::matches(condi), dplyr::any_of('c')) %>%
     as.data.frame()
   rownames(data) <- row_names
   # Run LIMMA
   if (!is.null(gamma_reg_model)) {
     weights <- calc_weights(data, gamma_reg_model) %>%
+      dplyr::select(-dplyr::any_of('c')) %>%
       as.matrix()
     trend <- FALSE
   } else if (!is.null(weights)) {
@@ -97,6 +98,7 @@ run_limma <- function(data,
     trend <- TRUE
   }
   data <- data %>%
+    dplyr::select(-dplyr::any_of('c')) %>%
     as.matrix()
   hits <- limma::lmFit(data, design, weights = weights) %>%
     limma::contrasts.fit(contrast_matrix) %>%

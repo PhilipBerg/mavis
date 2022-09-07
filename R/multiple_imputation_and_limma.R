@@ -130,7 +130,8 @@ multiple_imputation_and_limma <- function(data,
         "gamma_reg_weights",
         "calc_weights",
         "non_miss_data",
-        "id_col"
+        "id_col",
+        "bind_imputation"
       )
     )
     on.exit(rm(cluster))

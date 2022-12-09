@@ -97,7 +97,7 @@ extract_results <- function(results,
       .groups = "drop"
     )
   summary <- results %>%
-    summarise_imputations(pcor, id_col)
+    summarise_imputations(id_col)
   pvals_multi_imp %>%
     dplyr::left_join(
       summary,
@@ -106,7 +106,6 @@ extract_results <- function(results,
 }
 
 summarise_imputations <- function(results,
-                                  pcor = stats::p.adjust.methods,
                                   id_col = "id") {
   lfc <- results %>%
     dplyr::select(limma_results) %>%
@@ -117,14 +116,6 @@ summarise_imputations <- function(results,
   summary <- results %>%
     dplyr::select(imputation, limma_results) %>%
     tidyr::unnest(limma_results)
-  if (pcor != "none") {
-    summary <- summary %>%
-      dplyr::group_by(imputation, comparison) %>%
-      dplyr::mutate(
-        p_val = stats::p.adjust(p_val, method = pcor)
-      ) %>%
-      dplyr::ungroup()
-  }
 
   imputed <- results$imputed_data[[1]] %>%
     dplyr::pull(id_col)

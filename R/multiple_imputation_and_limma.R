@@ -70,7 +70,15 @@ multiple_imputation_and_limma <- function(data,
   # Fit gamma models
   data <- data %>%
     calculate_mean_sd_trends(design)
-  if(!'c' %in% names(data) & any(stringr::str_detect(as.character(formula_imputation), 'c'))){
+  if (
+    !'c' %in% names(data) &
+    any(stringr::str_detect(
+      c(
+        as.character(formula_imputation),
+        as.character(formula_weights)
+        ), 'c')
+    )
+  ) {
     data <- data %>%
       trend_partitioning(design, ...)
   }

@@ -10,25 +10,27 @@
 #'
 #' @examples # Please see vignette('baldur') for examples
 estimate_uncertainty <- function(data, identifier, design_matrix, gam_reg){
-  if(!is.null(data$c)){
-    pred <- ~stats::predict.glm(
-      gam_reg,
-      newdata = data.frame(mean = ., c = c),
+  reg_vars <- gam_reg %>%
+    formula() %>%
+    all.vars()
+  reg_vars <- reg_vars[!reg_vars %in% c('mean', 'sd')]
+  reg_vars <- reg_vars %>%
+    paste0(., ' = ', ., collapse = ', ') %>%
+    paste0("data.frame(mean = .x, ",  ., ")")
+  nd <- rlang::parse_expr(reg_vars)
+  pred <- rlang::quo(
+    ~ stats::predict.glm(
+      object = gam_reg,
+      newdata = !!nd,
       type = "response"
     )
-  } else {
-    pred <- ~predict.glm(
-      gam_reg,
-      newdata = data.frame(mean = .),
-      type = "response"
-    )
-  }
+  )
   condi_regex <- colnames(design_matrix) %>%
     paste0(collapse = '|')
   data %>%
     dplyr::mutate(
       dplyr::across(where(is.numeric),
-                    !!pred
+                    pred
       )
     ) %>%
     dplyr::select(dplyr::matches(condi_regex)) %>%

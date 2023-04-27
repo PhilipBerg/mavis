@@ -88,7 +88,7 @@ plot_mean_sd_trend <- function(data) {
 #'   plot_gamma()
 plot_gamma <- function(data) {
   data %>%
-    tidyr::drop_na() %>%
+    tidyr::drop_na(sd) %>%
     plot_mean_sd_trend() +
     ggplot2::ggtitle("Before Partitioning")
 }
@@ -133,10 +133,9 @@ plot_gamma_partition <- function(data, design, ...) {
     dplyr::mutate(
       c = plyr::mapvalues(c, c('L', 'U'), c('Lower', 'Upper'))
     ) %>%
-    tidyr::drop_na() %>%
+    tidyr::drop_na(sd) %>%
     ggplot2::ggplot(ggplot2::aes(mean, sd, color = c)) +
     ggplot2::geom_point(size = 1 / 10) +
-    ggplot2::theme_classic() +
     ggplot2::stat_function(
       fun = ~stats::predict.glm(gam_reg, newdata = data.frame(mean = .x, c = 'L'), type = 'response'), color = 'blue'
     ) +
@@ -149,5 +148,8 @@ plot_gamma_partition <- function(data, design, ...) {
     ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size=2))) +
     ggplot2::labs(
       x = expression(bold(bar(y))), y = expression(bold(s))
+    ) +
+    ggplot2::theme(
+      legend.position = c(.9, .9)
     )
 }

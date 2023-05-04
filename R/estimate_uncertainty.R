@@ -30,7 +30,7 @@ estimate_uncertainty <- function(data, identifier, design_matrix, gam_reg){
   data %>%
     dplyr::mutate(
       dplyr::across(where(is.numeric),
-                    pred
+                    !!pred
       )
     ) %>%
     dplyr::select(dplyr::matches(condi_regex)) %>%

@@ -80,8 +80,9 @@ impute_nest <- function(data, condition, gamma_reg_model, LOQ) {
       dplyr::mutate(
         mean_condi = rowMeans(dplyr::across(dplyr::contains(condition)), na.rm = T),
         mean_condi = tidyr::replace_na(mean_condi, LOQ),
-        mean_condi = dplyr::if_else(mean_condi > LOQ, mean_condi, LOQ)
-      )
+        mean_condi = dplyr::if_else(mean_condi > LOQ, mean_condi, LOQ),
+      ) %>%
+      tibble::rowid_to_column('tmp_id')
     data[["sd"]] <- stats::predict.glm(
       gamma_reg_model,
       dplyr::select(data, -mean, mean = mean_condi),

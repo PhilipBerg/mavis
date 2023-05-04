@@ -17,8 +17,9 @@ utils::globalVariables(
 #' @examples # Please see vignette('baldur') for examples
 trend_partitioning <- function(data, design_matrix, formula = sd ~ mean + c, eps = .1, n = 1000, verbose = T){
   cur_data <- data %>%
-    prep_data_for_clustering(design_matrix, eps = eps, n = n) %>%
+    prep_data_for_clustering(formula, eps = eps, n = n) %>%
     run_procedure(formula, eps = eps, n = n)
+  sd_col <- as.character(formula)[2]
   while (cur_data$i > 1) {
     if(verbose){
       print(
@@ -28,7 +29,7 @@ trend_partitioning <- function(data, design_matrix, formula = sd ~ mean + c, eps
     cur_data <- cur_data$data %>%
       run_procedure(formula, eps = eps, n = n)
   }
-  if(any(is.na(cur_data$data$sd))) {
+  if(any(is.na(cur_data$data[sd_col]))) {
     out <- cur_data$data %>%
       cluster_missing_sd(data, design_matrix, formula, eps, n)
   } else {
@@ -38,10 +39,12 @@ trend_partitioning <- function(data, design_matrix, formula = sd ~ mean + c, eps
     dplyr::select(-c(betal, betau, intl, intu, alpha))
 }
 
-prep_data_for_clustering <- function(data, design_matrix, eps = .1, n = 1000){
+prep_data_for_clustering <- function(data, formula, eps = .1, n = 1000){
+  fc <- as.character(formula)
   data_ms <- data %>%
-    tidyr::drop_na(sd)
-  gam_reg <-  stats::glm(sd ~ mean, stats::Gamma(log), data_ms)
+    tidyr::drop_na(fc[2])
+  formula <- as.formula(paste0(fc[2], fc[1], 'mean'))
+  gam_reg <-  stats::glm(formula, stats::Gamma(log), data_ms)
   data_ms %>%
     dplyr::mutate(
       res = stats::residuals(gam_reg),
@@ -77,18 +80,18 @@ resetimate_gamma_pars <- function(data, formula, gm = NULL){
     )
 }
 
-add_integrals <- function(data, eps = .1, n = 1000){
+add_integrals <- function(data, eps = .1, n = 1000, sd_col){
   data %>%
     dplyr::mutate(
-      intu = purrr::pmap_dbl(list(sd, alpha, betau), num_int_trapz, eps, n),
-      intl = purrr::pmap_dbl(list(sd, alpha, betal), num_int_trapz, eps, n)
+      intu = purrr::pmap_dbl(list(!!sd_col, alpha, betau), num_int_trapz, eps, n),
+      intl = purrr::pmap_dbl(list(!!sd_col, alpha, betal), num_int_trapz, eps, n)
     )
 }
 
 run_procedure <- function(data, formula, eps = .1, n = 1000){
   data %>%
     resetimate_gamma_pars(formula) %>%
-    add_integrals(eps = eps, n = n) %>%
+    add_integrals(eps = eps, n = n, rlang::sym(as.character(formula)[2])) %>%
     clust_itt_norm()
 }
 
@@ -113,11 +116,12 @@ cluster_missing_sd <- function(clustered_data, data, design_matrix, formula, eps
     dplyr::select(dplyr::matches(get_conditions(design_matrix))) %>%
     unlist() %>%
     sd(na.rm = T)
-  gam_mod <- stats::glm(sd ~ mean + c, stats::Gamma(log), clustered_data)
+  gam_mod <- stats::glm(formula, stats::Gamma(log), clustered_data)
+  sd_col <- as.character(formula)[2]
   data %>%
-    dplyr::filter(is.na(sd)) %>%
+    dplyr::filter(sd_col) %>%
     dplyr::mutate(
-      sd = sigma_all
+      !!sd_col := sigma_all
     ) %>%
     resetimate_gamma_pars(formula, gam_mod) %>%
     add_integrals(eps, n) %>%

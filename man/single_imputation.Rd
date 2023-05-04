@@ -4,7 +4,7 @@
 \alias{single_imputation}
 \title{Single imputation}
 \usage{
-single_imputation(data, design, gam_reg)
+single_imputation(data, design, formula = sd_p ~ mean)
 }
 \arguments{
 \item{data}{a \code{data.frame} to perform the imputation on, missing values should
@@ -32,15 +32,12 @@ colnames(design) <- paste0("ng", c(50, 100))
 
 yeast <- yeast_prog \%>\%
   # Normalize and log-transform the data
-  psrn("identifier") \%>\%
-  # Get mean-variance trends
-  calculate_mean_sd_trends(design)
-# Fit gamma regression
-gam_reg <- fit_gamma_regression(yeast, sd ~ mean)
+  psrn("identifier")
 
 # Run the imputation
 \dontrun{
 yeast \%>\%
-  single_imputation(design, gam_reg)
+  single_imputation(design)
+# Run with partitioning
 }
 }

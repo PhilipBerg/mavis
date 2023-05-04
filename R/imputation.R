@@ -22,22 +22,24 @@ utils::globalVariables("mean_condi")
 #'
 #' yeast <- yeast_prog %>%
 #'   # Normalize and log-transform the data
-#'   psrn("identifier") %>%
-#'   # Get mean-variance trends
-#'   calculate_mean_sd_trends(design)
-#' # Fit gamma regression
-#' gam_reg <- fit_gamma_regression(yeast, sd ~ mean)
+#'   psrn("identifier")
 #'
 #' # Run the imputation
 #' \dontrun{
 #' yeast %>%
-#'   single_imputation(design, gam_reg)
+#'   single_imputation(design)
+#' # Run with partitioning
 #' }
 single_imputation <- function(data,
                               design,
-                              gam_reg) {
+                              formula = sd_p ~ mean) {
   conditions <- design %>%
     get_conditions()
+  check_miss <- data %>%
+    dplyr::select(dplyr::matches(conditions)) %>%
+    unlist() %>%
+    anyNA()
+  if(!check_miss) return(data)
   LOQ <- data %>%
     dplyr::select(dplyr::matches(conditions)) %>%
     unlist(T, F) %>%
@@ -46,7 +48,8 @@ single_imputation <- function(data,
   order <- data %>%
     colnames()
   data <- data %>%
-    prep_data_for_imputation(conditions, gam_reg, LOQ)
+    calculate_mean_sd_trends(design, "pooled") %>%
+    prep_data_for_imputation(conditions, formula, LOQ)
   aux_cols <- data[[1]] %>%
     dplyr::select(-c(mean_condi, data))
   data %>%
@@ -61,6 +64,35 @@ single_imputation <- function(data,
     dplyr::select(dplyr::all_of(order))
 }
 
+prep_data_for_imputation <- function(data, conditions, formula, LOQ) {
+  tmp_cols <- data %>%
+    dplyr::select(-dplyr::matches(conditions))
+  gamma_reg_imputation <- fit_gamma_regression(data, formula)
+  data %>%
+    split.default(stringr::str_extract(names(.), conditions)) %>%
+    purrr::map(dplyr::bind_cols, tmp_cols) %>%
+    purrr::imap(impute_nest, gamma_reg_imputation, LOQ)
+}
+
+impute_nest <- function(data, condition, gamma_reg_model, LOQ) {
+  if (anyNA(data)) {
+    data <- data %>%
+      dplyr::mutate(
+        mean_condi = rowMeans(dplyr::across(dplyr::contains(condition)), na.rm = T),
+        mean_condi = tidyr::replace_na(mean_condi, LOQ),
+        mean_condi = dplyr::if_else(mean_condi > LOQ, mean_condi, LOQ)
+      )
+    data[["sd"]] <- stats::predict.glm(
+      gamma_reg_model,
+      dplyr::select(data, -mean, mean = mean_condi),
+      type = "response"
+    )
+    data %>%
+      tidyr::nest(data = dplyr::contains(condition))
+  } else {
+    return(data)
+  }
+}
 
 impute <- function(data) {
   data %>%
@@ -71,20 +103,6 @@ impute <- function(data) {
     purrr::map(tidyr::unnest, data)
 }
 
-impute_nest <- function(data, condition, gamma_reg_model, LOQ) {
-  if (anyNA(data)) {
-    data <- data %>%
-      dplyr::mutate(
-        mean_condi = rowMeans(dplyr::across(dplyr::contains(condition)), na.rm = T),
-        mean_condi = tidyr::replace_na(mean_condi, LOQ)
-      )
-    data[["sd"]] <- stats::predict.glm(gamma_reg_model, data, type = "response")
-    data %>%
-      tidyr::nest(data = dplyr::contains(condition))
-  } else {
-    return(data)
-  }
-}
 
 impute_row <- function(mean_condi, sd, data) {
   if (!anyNA(data)) {
@@ -94,16 +112,6 @@ impute_row <- function(mean_condi, sd, data) {
     data[is.na(data)] <- stats::rnorm(n = sum(is.na(data)), mean = mean_condi, sd = sd)
     return(data)
   }
-}
-
-
-prep_data_for_imputation <- function(data, conditions, gamma_reg_imputation, LOQ) {
-  tmp_cols <- data %>%
-    dplyr::select(-dplyr::matches(conditions))
-  data %>%
-    split.default(stringr::str_extract(names(.), conditions)) %>%
-    purrr::map(dplyr::bind_cols, tmp_cols) %>%
-    purrr::imap(impute_nest, gamma_reg_imputation, LOQ)
 }
 
 estimate_loq <- function(data) {

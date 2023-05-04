@@ -4,12 +4,16 @@
 \alias{calculate_mean_sd_trends}
 \title{Calculate the Mean-Variance trend}
 \usage{
-calculate_mean_sd_trends(data, design_matrix)
+calculate_mean_sd_trends(data, design_matrix, sdev = c("sample", "pooled"))
 }
 \arguments{
 \item{data}{A \code{tibble} or \code{data.frame} to annotate with mean and sd}
 
 \item{design_matrix}{A design matrix for the data (see example)}
+
+\item{sdev}{Which centered second order moment to calculate. Can be "sample"
+for the sample standard deviation, "pooled" for the pooled standard
+deviation, or can be both of them to calculate both.}
 }
 \value{
 A \code{tibble} or \code{data.frame} with the mean and sd vectors
@@ -18,5 +22,5 @@ A \code{tibble} or \code{data.frame} with the mean and sd vectors
 Calculates the mean and sd of the rows.
 }
 \examples{
-# Please see vignette('baldur') for examples
+#Example
 }

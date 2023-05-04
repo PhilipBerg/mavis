@@ -27,11 +27,11 @@ utils::globalVariables(c(".", "sd", "model"))
 #' \dontrun{
 #' plot_gamma_regression(yeast, design, verbose = FALSE)
 #' }
-plot_gamma_regression <- function(data, design, ...) {
+plot_gamma_regression <- function(data, design, sd_type = 'sd', ...) {
   data <- data %>%
     calculate_mean_sd_trends(design)
   base_plot <- data %>%
-    plot_gamma()
+    plot_gamma(sd_type)
   part_plot <- data %>%
     plot_gamma_partition(design, ...)
   plots <- cowplot::plot_grid(base_plot, part_plot)
@@ -45,9 +45,10 @@ plot_gamma_regression <- function(data, design, ...) {
   )
 }
 
-plot_mean_sd_trend <- function(data) {
+plot_mean_sd_trend <- function(data, sd_type) {
+  y_tit <- set_y_tit(sd_type)
   data %>%
-    ggplot2::ggplot(ggplot2::aes(mean, sd)) +
+    ggplot2::ggplot(ggplot2::aes(mean, !!rlang::sym(sd_type))) +
     ggplot2::geom_point(size = 1 / 10) +
     ggplot2::geom_smooth(
       method = stats::glm,
@@ -59,7 +60,7 @@ plot_mean_sd_trend <- function(data) {
     ) +
     ggplot2::theme_classic() +
     ggplot2::labs(
-      x = expression(bold(bar(y))), y = expression(bold(s))
+      x = expression(bold(bar(y))), y = y_tit
     )
 }
 
@@ -86,10 +87,10 @@ plot_mean_sd_trend <- function(data) {
 #' yeast %>%
 #'   calculate_mean_sd_trends(design) %>%
 #'   plot_gamma()
-plot_gamma <- function(data) {
+plot_gamma <- function(data, sd_type = 'sd') {
   data %>%
-    tidyr::drop_na(sd) %>%
-    plot_mean_sd_trend() +
+    tidyr::drop_na(sd_type) %>%
+    plot_mean_sd_trend(sd_type) +
     ggplot2::ggtitle("Before Partitioning")
 }
 
@@ -125,6 +126,12 @@ plot_gamma_partition <- function(data, design, ...) {
     data <- data %>%
       trend_partitioning(design, ...)
   }
+  if (!'formula' %in% ...names()) {
+    sd_col <- 'sd'
+  } else {
+    sd_col <- rlang::sym(as.character(rlang::list2(...)[['formula']])[2])
+  }
+  y_tit <- set_y_tit(sd_col)
   trend_colors <- purrr::set_names(viridisLite::turbo(2, end = .75), c('Lower', 'Upper'))
   gam_reg <- rlang::eval_tidy(
     rlang::call2(fit_gamma_regression, data = data, !!!rlang::dots_list(...))
@@ -134,7 +141,7 @@ plot_gamma_partition <- function(data, design, ...) {
       c = plyr::mapvalues(c, c('L', 'U'), c('Lower', 'Upper'))
     ) %>%
     tidyr::drop_na(sd) %>%
-    ggplot2::ggplot(ggplot2::aes(mean, sd, color = c)) +
+    ggplot2::ggplot(ggplot2::aes(mean, !!sd_col, color = c)) +
     ggplot2::geom_point(size = 1 / 10) +
     ggplot2::stat_function(
       fun = ~stats::predict.glm(gam_reg, newdata = data.frame(mean = .x, c = 'L'), type = 'response'), color = 'blue'
@@ -147,9 +154,17 @@ plot_gamma_partition <- function(data, design, ...) {
     ggplot2::scale_color_manual('Trend', values = trend_colors) +
     ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size=2))) +
     ggplot2::labs(
-      x = expression(bold(bar(y))), y = expression(bold(s))
+      x = expression(bold(bar(y))), y = y_tit
     ) +
     ggplot2::theme(
       legend.position = c(.9, .9)
     )
+}
+
+set_y_tit <- function(sd_col) {
+  if (sd_col == 'sd') {
+    expression(bold(s))
+  } else{
+    expression(bold(s[p]))
+  }
 }

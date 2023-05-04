@@ -28,8 +28,7 @@ add <- function(x, y) {
 #' @export
 #'
 #' @examples
-#' ```{r, child = "man/rmd/child_test.Rmd"}
-#' ```
+#' knitr::knit_child("man/rmd/child_test.Rmd")
 #'
 #' # Unique part
 #' product(x, y)

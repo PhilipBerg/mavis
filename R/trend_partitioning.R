@@ -29,7 +29,7 @@ trend_partitioning <- function(data, design_matrix, formula = sd ~ mean + c, eps
     cur_data <- cur_data$data %>%
       run_procedure(formula, eps = eps, n = n)
   }
-  if(any(is.na(cur_data$data[sd_col]))) {
+  if(anyNA(data[[sd_col]])) {
     out <- cur_data$data %>%
       cluster_missing_sd(data, design_matrix, formula, eps, n)
   } else {
@@ -48,7 +48,7 @@ prep_data_for_clustering <- function(data, formula, eps = .1, n = 1000){
   data_ms %>%
     dplyr::mutate(
       res = stats::residuals(gam_reg),
-      c = dplyr::if_else(res<0, 'L', 'U')
+      c = dplyr::if_else(res < 0, 'L', 'U')
     ) %>%
     dplyr::select(-res)
 }
@@ -117,17 +117,17 @@ cluster_missing_sd <- function(clustered_data, data, design_matrix, formula, eps
     unlist() %>%
     sd(na.rm = T)
   gam_mod <- stats::glm(formula, stats::Gamma(log), clustered_data)
-  sd_col <- as.character(formula)[2]
+  sd_col <- rlang::sym(as.character(formula)[2])
   data %>%
-    dplyr::filter(sd_col) %>%
+    dplyr::filter(is.na(!!sd_col)) %>%
     dplyr::mutate(
       !!sd_col := sigma_all
     ) %>%
     resetimate_gamma_pars(formula, gam_mod) %>%
-    add_integrals(eps, n) %>%
+    add_integrals(eps, n, sd_col = sd_col) %>%
     dplyr::mutate(
-      c = dplyr::if_else(intl<intu, 'U', 'L'),
-      sd = NA
+      c = dplyr::if_else(intl < intu, 'U', 'L'),
+      !!sd_col := NA
     ) %>%
-    dplyr::bind_rows(clustered_data)
+    dplyr::bind_rows(clustered_data, .)
 }

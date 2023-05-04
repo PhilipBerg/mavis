@@ -18,6 +18,9 @@ A numeric value of the sum of x and y
 This function adds the values of x and y.
 }
 \examples{
-# Unique part
-add(x, y)
+# Common part
+x <- 1
+y <- 2
+# Unique part compared to product
+z <- add(x, y)
 }

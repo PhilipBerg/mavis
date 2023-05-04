@@ -4,7 +4,7 @@
 \alias{plot_gamma}
 \title{Function for plotting the gamma regression used for mean-variance normalization}
 \usage{
-plot_gamma(data)
+plot_gamma(data, sd_type = "sd")
 }
 \arguments{
 \item{data}{The data to use for producing the plots.}

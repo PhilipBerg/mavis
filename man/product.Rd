@@ -18,8 +18,7 @@ A numeric value of the product of x and y
 This function takes the product of x and y
 }
 \examples{
-```{r, child = "man/rmd/child_test.Rmd"}
-```
+knitr::knit_child("man/rmd/child_test.Rmd")
 
 # Unique part
 product(x, y)

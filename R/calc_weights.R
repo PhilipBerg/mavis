@@ -37,26 +37,7 @@
 #'
 #' # Generate the weights for the yeast data
 #' calc_weights(yeast, gamma_model)
-calc_weights <- function(data, gamma_reg_model) {
-  if(!is.null(data$c)){
-    pred <- ~stats::predict.glm(
-      gamma_reg_model,
-      newdata = data.frame(mean = ., c = c),
-      type = "response"
-    )
-  } else {
-    pred <- ~predict.glm(
-      gamma_reg_model,
-      newdata = data.frame(mean = .),
-      type = "response"
-    )
-  }
-  data %>%
-    dplyr::mutate(
-      dplyr::across(
-        where(is.numeric),
-        !!pred
-      ),
-      dplyr::across(where(is.numeric), ~ .^(-2))
-    )
+calc_weights <- function(data, identifier, design, gamma_reg_model) {
+  estimate_uncertainty(data, identifier, design, gamma_reg_model) %>%
+    magrittr::raise_to_power(-2)
 }

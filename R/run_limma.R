@@ -75,9 +75,8 @@ run_limma <- function(data,
   rownames(data) <- row_names
   # Run LIMMA
   if (!is.null(gamma_reg_model)) {
-    weights <- calc_weights(data, gamma_reg_model) %>%
-      dplyr::select(-dplyr::any_of('c')) %>%
-      as.matrix()
+    weights <- calc_weights(data, id_col, design, gamma_reg_model)
+    rownames(weights) <- row_names
     trend <- FALSE
   } else if (!is.null(weights)) {
     if((dim(weights) != dim(data))){
@@ -98,7 +97,7 @@ run_limma <- function(data,
     trend <- TRUE
   }
   data <- data %>%
-    dplyr::select(-dplyr::any_of('c')) %>%
+    dplyr::select(matches(condi)) %>%
     as.matrix()
   hits <- limma::lmFit(data, design, weights = weights) %>%
     limma::contrasts.fit(contrast_matrix) %>%
@@ -126,6 +125,6 @@ run_limma <- function(data,
       comparison
     ) %>%
     dplyr::mutate(
-      comparison = stringr::str_replace(comparison, '-', ' Vs ')
+      comparison = stringr::str_replace(comparison, '-', ' vs ')
     )
 }

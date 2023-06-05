@@ -103,12 +103,23 @@ num_int_trapz <- function(sd, alpha, beta, eps, n){
   sum(c(y[1]/2, y[2:(length(y)-2)], y[length(y)-1]/2)*dx)
 }
 
-estimate_beta <- function(model, mean, c, alpha){
-  if(!is.function(c)){
-    alpha / stats::predict.glm(model, newdata = data.frame(mean = mean, c = c), type = 'response')
-  } else{
-    alpha / stats::predict.glm(model, newdata = data.frame(mean = mean), type = 'response')
-  }
+estimate_beta <- function(model, mean, c, alpha, ...){
+  reg_vars <- model %>%
+    formula() %>%
+    all.vars()
+  reg_vars <- reg_vars[!reg_vars %in% c("mean", "sd")]
+  reg_vars <- reg_vars %>%
+    paste0(., " = ", ., collapse = ", ") %>%
+    paste0("newdata = data.frame(mean = mean, ", ., ")")
+  nd <- rlang::parse_expr(reg_vars)
+  alpha / rlang::eval_tidy(
+    rlang::call2(
+      stats::predict.glm,
+      object = model,
+      newdata = nd,
+      type = 'response'
+    )
+  )
 }
 
 cluster_missing_sd <- function(clustered_data, data, design_matrix, formula, eps, n){

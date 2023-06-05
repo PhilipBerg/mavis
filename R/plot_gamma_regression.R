@@ -127,7 +127,7 @@ plot_gamma_partition <- function(data, design, ...) {
       trend_partitioning(design, ...)
   }
   if (!'formula' %in% ...names()) {
-    sd_col <- 'sd'
+    sd_col <- rlang::sym('sd')
   } else {
     sd_col <- rlang::sym(as.character(rlang::list2(...)[['formula']])[2])
   }

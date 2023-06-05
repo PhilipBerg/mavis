@@ -52,7 +52,7 @@ utils::globalVariables(
 #'
 #' # Normalize and log-transform the data
 #' yeast <- psrn(yeast_prog, "identifier")
-#' \dontrun{
+#' \donttest{
 #' results <- multiple_imputation_and_limma(yeast, design, contrast, 1000, 5, "identifier")
 #' }
 multiple_imputation_and_limma <- function(data,
@@ -94,24 +94,7 @@ multiple_imputation_and_limma <- function(data,
     plot_gamma_regression(data, design, ...)
   }
   # Generate imputation input
-  LOQ <- data %>%
-    purrr::keep(is.numeric) %>%
-    unlist(T, F) %>%
-    {stats::quantile(., .25, na.rm = T) - 1.5*stats::IQR(., na.rm = T)} %>%
-    unname()
-  col_order <- names(data)
-  conditions <- design %>%
-    get_conditions()
-  missing_data <- data %>%
-    dplyr::filter(dplyr::if_any(dplyr::matches(conditions), is.na))
-  char_cols <- missing_data %>%
-    purrr::keep(is.character)
-  impute_nested <- missing_data %>%
-    prep_data_for_imputation(conditions, gamma_reg_imp, LOQ)
-  # Generate results
-  ## Non-missing data
-  non_miss_data <- data %>%
-    tidyr::drop_na(dplyr::matches(conditions))
+  imp_pars <- get_imputation_pars(data, design, formula_imputation, workers)
   if (workers != 1) {
     cluster <- multidplyr::new_cluster(workers)
     multidplyr::cluster_library(
@@ -129,37 +112,34 @@ multiple_imputation_and_limma <- function(data,
       cluster,
       c(
         "impute",
-        "impute_row",
-        "char_cols",
-        "col_order",
         "run_limma",
         "design",
         "contrast_matrix",
         "gamma_reg_weights",
         "calc_weights",
-        "non_miss_data",
+        "imp_pars",
         "id_col",
-        "bind_imputation"
+        "data"
       )
     )
     on.exit(rm(cluster))
   }
   results <- tibble::tibble(
     imputation = seq_len(imputations)
-  )
+  ) %>%
+    dplyr::mutate(
+      # Run imputation
+      imputed_data = purrr::map(
+        imputation,
+        ~ impute(data, imp_pars)
+      )
+    )
   if (workers != 1) {
     results <- results %>%
       multidplyr::partition(cluster)
   }
   results <- results %>%
     dplyr::mutate(
-      # Run imputation
-      imputed_data = purrr::map(
-        imputation,
-        ~ impute(impute_nested) %>%
-          bind_imputation(conditions, col_order) %>%
-          bind_rows(non_miss_data)
-      ),
       # Run limma
       limma_results = purrr::map(
         imputed_data,
@@ -173,14 +153,4 @@ multiple_imputation_and_limma <- function(data,
       dplyr::arrange(imputation)
   }
   return(results)
-}
-
-
-bind_imputation <- function(imputation, match_cols, order) {
-  imputation[-1] %>%
-    purrr::map(
-      ~ .x[grep(match_cols, names(.x))],
-    ) %>%
-    dplyr::bind_cols(imputation[1], .) %>%
-    magrittr::extract(order)
 }

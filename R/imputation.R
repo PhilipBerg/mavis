@@ -32,95 +32,149 @@ utils::globalVariables("mean_condi")
 #' }
 single_imputation <- function(data,
                               design,
-                              formula = sd_p ~ mean) {
-  conditions <- design %>%
-    get_conditions()
-  check_miss <- data %>%
-    dplyr::select(dplyr::matches(conditions)) %>%
-    unlist() %>%
-    anyNA()
-  if(!check_miss) return(data)
-  LOQ <- data %>%
-    dplyr::select(dplyr::matches(conditions)) %>%
-    unlist(T, F) %>%
-    {stats::quantile(., .25, na.rm = T) - 1.5*stats::IQR(., na.rm = T)} %>%
-    unname()
-  order <- data %>%
-    colnames()
-  data <- data %>%
-    calculate_mean_sd_trends(design, "pooled") %>%
-    prep_data_for_imputation(conditions, formula, LOQ)
-  aux_cols <- data[[1]] %>%
-    dplyr::select(-c(mean_condi, data))
-  data %>%
-    purrr::map(
-      dplyr::select, c(sd, mean_condi, data)
-    ) %>%
-    impute() %>%
-    purrr::map(
-      dplyr::select, -c(sd, mean_condi)
-    ) %>%
-    dplyr::bind_cols(aux_cols, .) %>%
-    dplyr::select(dplyr::all_of(order))
+                              formula = sd_p ~ mean,
+                              workers = 1) {
+  imp_pars <- get_imputation_pars(data, design, formula, workers)
+  impute(data, imp_pars)
 }
 
-prep_data_for_imputation <- function(data, conditions, formula, LOQ) {
-  tmp_cols <- data %>%
-    dplyr::select(-dplyr::matches(conditions))
-  gamma_reg_imputation <- fit_gamma_regression(data, formula)
-  data %>%
-    split.default(stringr::str_extract(names(.), conditions)) %>%
-    purrr::map(dplyr::bind_cols, tmp_cols) %>%
-    purrr::imap(impute_nest, gamma_reg_imputation, LOQ)
-}
-
-impute_nest <- function(data, condition, gamma_reg_model, LOQ) {
-  if (anyNA(data)) {
-    data <- data %>%
-      dplyr::mutate(
-        mean_condi = rowMeans(dplyr::across(dplyr::contains(condition)), na.rm = T),
-        mean_condi = tidyr::replace_na(mean_condi, LOQ),
-        mean_condi = dplyr::if_else(mean_condi > LOQ, mean_condi, LOQ),
-      ) %>%
-      tibble::rowid_to_column('tmp_id')
-    data[["sd"]] <- stats::predict.glm(
-      gamma_reg_model,
-      dplyr::select(data, -mean, mean = mean_condi),
-      type = "response"
+impute <- function(data, imp_pars) {
+  for (i in names(imp_pars$mis_vals)) {
+    data[imp_pars$mis_vals[[i]],i] <- rnorm(
+      n    = length(imp_pars$mis_vals[[i]]),
+      mean = imp_pars$means[[i]],
+      sd   = imp_pars$sd_error[[i]]
     )
-    data %>%
-      tidyr::nest(data = dplyr::contains(condition))
-  } else {
+  }
+  return(data)
+}
+
+
+get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1) {
+  cat("Estimating Imputation Paramters\n")
+  condi <- mavis:::get_conditions(design)
+  mis_vals <- data %>%
+    dplyr::select(matches(condi)) %>%
+    purrr::map(~which(is.na(.x)))
+
+  mis_vals <- mis_vals[purrr::map_lgl(mis_vals, ~ length(.x) != 0)]
+
+  sd_pooled <- data %>%
+    calculate_mean_sd_trends(design, "pooled")
+  gam_reg <- fit_gamma_regression(sd_pooled, formula)
+  sd_pooled <- sd_pooled %>%
+    magrittr::use_series(sd_p) %>%
+    sqrt()
+
+  imp_order <- purrr::map_dbl(mis_vals, length) %>%
+    sort()
+  mis_vals <- mis_vals[names(imp_order)]
+
+  if (workers != 1) {
+    cl <- parallel::makeCluster(
+      min(sum(design) - 1, workers)
+    )
+    doParallel::registerDoParallel(cl)
+  }
+  dif <- vector()
+  n_diff <- Inf
+  row_imp <- function(row) {
+    data <- row[-length(row)]
+    if (!(all(is.na(data)) | !anyNA(data))) {
+      data[is.na(data)] <- rnorm(
+        sum(is.na(data)), mean(data, na.rm = T), row[length(row)]
+      )
+    }
     return(data)
   }
-}
 
-impute <- function(data) {
-  data %>%
-    purrr::map(
-      dplyr::mutate,
-      data = purrr::pmap(list(mean_condi, sd, data), impute_row)
-    ) %>%
-    purrr::map(tidyr::unnest, data)
-}
+  imp_mat <- data %>%
+    dplyr::select(matches(condi))
 
+  tmp_na_vals <- imp_mat %>%
+    dplyr::select(matches(condi)) %>%
+    purrr::map(~which(is.na(.x)))
 
-impute_row <- function(mean_condi, sd, data) {
-  if (!anyNA(data)) {
-    return(data)
-  } else {
-    data <- as.data.frame(data)
-    data[is.na(data)] <- stats::rnorm(n = sum(is.na(data)), mean = mean_condi, sd = sd)
-    return(data)
+  tmp_na_vals <- tmp_na_vals[purrr::map_lgl(tmp_na_vals, ~ length(.x) != 0)]
+
+  mean_vals <- imp_mat %>%
+    purrr::map_dbl(mean, na.rm = T)
+  for (i in names(tmp_na_vals)) {
+    data[tmp_na_vals[[i]],i] <- imp_mat[tmp_na_vals[[i]],i] <- mean_vals[i]
   }
+
+  while (TRUE) {
+    tic <- Sys.time()
+    for(i in names(mis_vals)) {
+      form <- formula(
+        paste0(i, '~ .')
+      )
+      idx <- mis_vals[[i]]
+
+      pred <- ranger::ranger(
+        form, dplyr::slice(imp_mat, -idx), mtry = floor(sum(design)/3),
+        num.threads = workers
+      ) %>%
+        predict(dplyr::slice(imp_mat, idx)) %>%
+        magrittr::use_series(predictions)
+
+      dif[i] <- sum(
+        (imp_mat[idx,i] - pred)^2
+      ) / sum(pred^2)
+
+      data[idx,i] <- imp_mat[idx,i] <- pred
+    }
+    if (n_diff > sum(dif)) {
+      cat(
+        'Previous error:', n_diff, '\t>\tCurrent error:', sum(dif), '\n'
+      )
+
+      n_diff <- sum(dif)
+      imp_out <- data
+      print_it_time(tic)
+    } else {
+      cat(
+        'Previous error:', n_diff, '\t<\tCurrent error:', sum(dif), '\tBreaking \n'
+      )
+      sd_error <- means <- list()
+      for (i in names(mis_vals)) {
+        idx <- mis_vals[[i]]
+        means[[i]] <- imp_mat[[i]][idx]
+        trend_sd <- predict.glm(
+          gam_reg,
+          data.frame(mean = means[[i]]),
+          type = 'response'
+        ) %>%
+          sqrt()
+        sd_error[[i]] <- dplyr::if_else(
+          !is.na(sd_pooled[idx]),
+          sd_pooled[idx] * trend_sd,
+          trend_sd^2
+        )
+      }
+      print_it_time(tic)
+      break
+    }
+  }
+  if (workers != 1) {
+    parallel::stopCluster(cl)
+    rm(cl)
+    gc()
+  }
+
+    return(
+      list(
+        mis_vals = mis_vals,
+        means = means,
+        sd_error = sd_error
+      )
+    )
 }
 
-estimate_loq <- function(data) {
-  data %>%
-    purrr::keep(is.numeric) %>%
-    unlist(T, F) %>%
-    {
-      stats::quantile(., .25, na.rm = T) - 1.5 * stats::IQR(., na.rm = T)
-    } %>%
-    unname()
+print_it_time <- function(tic) {
+  toc <- Sys.time() - tic
+  cat(
+    "Iteration time:\n",
+    format(toc), '\n\n'
+  )
 }

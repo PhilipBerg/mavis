@@ -5,10 +5,12 @@ utils::globalVariables(c(".", "sd", "model"))
 #' Generates a scatter plot with the gamma regressions of the mean-variance
 #' trends for the precision weights and imputation.
 #'
-#'
+#' @name plt_gam
 #' @param data The data to use for producing the plots.
 #' @param design A design matrix as produced by \code{\link[stats]{model.matrix}}.
 #' @param ... Additional arguments to \code{\link[mavis]{trend_partitioning}}.
+#' @param sd_type To plot the sample standard deviation ("sd") or pooled estimator
+#' ("sd_p").
 #'
 #' @return a plot with the mean-variance trend used for the precision
 #' weights on the left side, and the trend lines used for the imputation on the
@@ -69,11 +71,12 @@ plot_mean_sd_trend <- function(data, sd_type) {
 #' Generates a scatter plot with the gamma regressions of the mean-variance
 #' trends for the precision weights
 #'
-#' @param data The data to use for producing the plots.
+#' @inheritParams plt_gam
 #'
 #' @return a plot with the mean-variance trend used for the precision
 #' weights.
 #' @export
+#' @importFrom tidyr drop_na
 #'
 #' @examples
 #' # Produce a design matrix
@@ -98,8 +101,7 @@ plot_gamma <- function(data, sd_type = 'sd') {
 #'
 #' Generates a scatter plot with the gamma regressions of the mean-variance
 #' trends for the imputation.
-#'
-#' @param data The data to use for producing the plots.
+#' @inheritParams plt_gam
 #' @param design A design matrix as produced by \code{\link[stats]{model.matrix}}.
 #' @param ... Additional arguments to \code{\link[mavis]{trend_partitioning}}.
 #'

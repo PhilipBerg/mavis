@@ -1,4 +1,4 @@
-utils::globalVariables("mean_condi")
+
 #' Single imputation
 #'
 #' Performs a single imputation run and returns the data with NA values replaced
@@ -8,10 +8,14 @@ utils::globalVariables("mean_condi")
 #' be `NA`.
 #' @param design a design or model matrix as produced by
 #'  \code{\link[stats]{model.matrix}} with column names corresponding to the
-#'  different conditions.
-#' @param gam_reg a gamma regression model
+#' @param formula Regression formula for the pooled variance and mean trend
+#' @param workers Number of parallel workers to use when building the forest
+#' @param ... Additional arguments to [ranger::ranger].
 #' @return a `data.frame` with `NA` values replaced by imputed values.
 #' @export
+#' @importFrom ranger ranger
+#' @importFrom doParallel registerDoParallel
+#' @importFrom parallel stopCluster
 #'
 #' @examples
 #' # Generate a design matrix for the data
@@ -33,14 +37,15 @@ utils::globalVariables("mean_condi")
 single_imputation <- function(data,
                               design,
                               formula = sd_p ~ mean,
-                              workers = 1) {
+                              workers = 1,
+                              ...) {
   imp_pars <- get_imputation_pars(data, design, formula, workers)
   impute(data, imp_pars)
 }
 
 impute <- function(data, imp_pars) {
   for (i in names(imp_pars$mis_vals)) {
-    data[imp_pars$mis_vals[[i]],i] <- rnorm(
+    data[imp_pars$mis_vals[[i]],i] <- stats::rnorm(
       n    = length(imp_pars$mis_vals[[i]]),
       mean = imp_pars$means[[i]],
       sd   = imp_pars$sd_error[[i]]
@@ -49,10 +54,10 @@ impute <- function(data, imp_pars) {
   return(data)
 }
 
-
-get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1) {
+utils::globalVariables(c("matches", "sd_p", "predictions"))
+get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1, ...) {
   cat("Estimating Imputation Paramters\n")
-  condi <- mavis:::get_conditions(design)
+  condi <- get_conditions(design)
   mis_vals <- data %>%
     dplyr::select(matches(condi)) %>%
     purrr::map(~which(is.na(.x)))
@@ -78,15 +83,6 @@ get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1
   }
   dif <- vector()
   n_diff <- Inf
-  row_imp <- function(row) {
-    data <- row[-length(row)]
-    if (!(all(is.na(data)) | !anyNA(data))) {
-      data[is.na(data)] <- rnorm(
-        sum(is.na(data)), mean(data, na.rm = T), row[length(row)]
-      )
-    }
-    return(data)
-  }
 
   imp_mat <- data %>%
     dplyr::select(matches(condi))
@@ -103,6 +99,19 @@ get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1
     data[tmp_na_vals[[i]],i] <- imp_mat[tmp_na_vals[[i]],i] <- mean_vals[i]
   }
 
+  c_check <- stringr::str_detect(
+    as.character(formula), 'c'
+  ) %>%
+    any()
+  if (c_check) {
+    c_vals <- purrr::map(mis_vals, ~ data$c[.x])
+  }
+  rf_pars <- list(mtry = floor(sum(design)/3))
+  in_pars <- rlang::list2(...)
+  rf_pars[names(in_pars)] <- in_pars[names(in_pars)]
+  rf <- purrr::partial(ranger::ranger, !!!rf_pars)
+
+
   while (TRUE) {
     tic <- Sys.time()
     for(i in names(mis_vals)) {
@@ -111,11 +120,11 @@ get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1
       )
       idx <- mis_vals[[i]]
 
-      pred <- ranger::ranger(
-        form, dplyr::slice(imp_mat, -idx), mtry = floor(sum(design)/3),
+      pred <- rf(
+        form, dplyr::slice(imp_mat, -idx),
         num.threads = workers
       ) %>%
-        predict(dplyr::slice(imp_mat, idx)) %>%
+        stats::predict(dplyr::slice(imp_mat, idx)) %>%
         magrittr::use_series(predictions)
 
       dif[i] <- sum(
@@ -140,9 +149,13 @@ get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1
       for (i in names(mis_vals)) {
         idx <- mis_vals[[i]]
         means[[i]] <- imp_mat[[i]][idx]
-        trend_sd <- predict.glm(
+        new_data <- data.frame(mean = means[[i]])
+        if (c_check) {
+          new_data <- dplyr::bind_cols(new_data, c = c_vals[[i]])
+        }
+        trend_sd <- stats::predict.glm(
           gam_reg,
-          data.frame(mean = means[[i]]),
+          new_data,
           type = 'response'
         ) %>%
           sqrt()

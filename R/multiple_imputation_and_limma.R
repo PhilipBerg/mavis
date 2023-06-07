@@ -53,7 +53,14 @@ utils::globalVariables(
 #' # Normalize and log-transform the data
 #' yeast <- psrn(yeast_prog, "identifier")
 #' \donttest{
-#' results <- multiple_imputation_and_limma(yeast, design, contrast, 1000, 5, "identifier")
+#' results <- multiple_imputation_and_limma(
+#'   yeast,
+#'   design,
+#'   contrast,
+#'   10, # Just running 10 imputation for the example purpose, but can be large > 1000
+#'   1,  # Number of parallel workers to use (will drastically increase the speed)
+#'   "identifier"
+#' )
 #' }
 multiple_imputation_and_limma <- function(data,
                                           design,
@@ -64,7 +71,7 @@ multiple_imputation_and_limma <- function(data,
                                           .robust = TRUE,
                                           weights = TRUE,
                                           plot_trend = FALSE,
-                                          formula_imputation = sd ~ mean,
+                                          formula_imputation = sd_p ~ mean,
                                           formula_weights = sd ~ mean,
                                           ...) {
   # Fit gamma models
@@ -73,19 +80,18 @@ multiple_imputation_and_limma <- function(data,
   if (
     !'c' %in% names(data) &
     any(stringr::str_detect(
-      c(
-        as.character(formula_imputation),
-        as.character(formula_weights)
-        ), 'c')
+        as.character(formula_weights),
+         'c')
     )
   ) {
     data <- data %>%
-      trend_partitioning(design, ...)
+      trend_partitioning(design, formula_weights, ...)
   }
-  gamma_reg_imp <- fit_gamma_regression(data, formula_imputation)
-  if(formula_imputation == formula_weights & weights){
-    gamma_reg_weights <- gamma_reg_imp
-  } else if(weights){
+  # gamma_reg_imp <- fit_gamma_regression(data, formula_imputation)
+  # if(formula_imputation == formula_weights & weights){
+  #   gamma_reg_weights <- gamma_reg_imp
+  # } else
+  if(weights){
     gamma_reg_weights <- fit_gamma_regression(data, formula_weights)
   } else{
     gamma_reg_weights <- NULL
@@ -94,7 +100,21 @@ multiple_imputation_and_limma <- function(data,
     plot_gamma_regression(data, design, ...)
   }
   # Generate imputation input
-  imp_pars <- get_imputation_pars(data, design, formula_imputation, workers)
+  if (
+    !'c' %in% names(data) &
+    any(stringr::str_detect(
+      as.character(formula_imputation),
+      'c')
+    )
+  ) {
+    cat('Trend paritioning for imputation\n')
+    imp_pars <- data %>%
+      trend_partitioning(design, formula_imputation, ...)
+  } else {
+    imp_pars <- data
+  }
+  imp_pars <- imp_pars %>%
+    get_imputation_pars(design, formula_imputation, workers, ...)
   if (workers != 1) {
     cluster <- multidplyr::new_cluster(workers)
     multidplyr::cluster_library(

@@ -9,11 +9,11 @@ A data frame with 10599 rows and 13 variables:
 \describe{
 \item{identifier}{id column for features, true positives contains UPS and
 true negatives contains Cre}
-\item{fmol25_* }{Technical replicates with true positives spiked-in from 25
+\item{fmol25_1,fmol25_2,fmol25_3,fmol25_4}{Technical replicates with true positives spiked-in from 25
 fmol UPS1 peptides}
-\item{fmol50_* }{Technical replicates with true positives spiked-in from 50
+\item{fmol50_1,fmol50_2,fmol50_3,fmol50_4}{Technical replicates with true positives spiked-in from 50
 fmol UPS1 peptides}
-\item{fmol100_* }{Technical replicates with true positives spiked-in from
+\item{fmol100_1,fmol100_2,fmol100_3,fmol100_4}{Technical replicates with true positives spiked-in from
 100 fmol UPS1 peptides}
 }
 }

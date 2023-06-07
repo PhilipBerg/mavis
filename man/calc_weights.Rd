@@ -4,11 +4,15 @@
 \alias{calc_weights}
 \title{Calculate Precision Weights From Gamma Regression}
 \usage{
-calc_weights(data, gamma_reg_model)
+calc_weights(data, identifier, design, gamma_reg_model)
 }
 \arguments{
 \item{data}{A \code{data.frame} who's quantitative columns should be converted to
 precision weights.}
+
+\item{identifier}{A string for the unique identifiers in the data}
+
+\item{design}{A design matrix for the data}
 
 \item{gamma_reg_model}{a \code{glm} object as produced by
 see \code{\link[mavis]{fit_gamma_regression}} for details.}
@@ -44,5 +48,5 @@ yeast <- psrn(yeast_prog, "identifier") \%>\%
 gamma_model <- fit_gamma_regression(yeast, sd ~ mean)
 
 # Generate the weights for the yeast data
-calc_weights(yeast, gamma_model)
+calc_weights(yeast, 'identifier', design, gamma_model)
 }

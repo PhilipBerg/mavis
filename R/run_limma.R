@@ -97,7 +97,7 @@ run_limma <- function(data,
     trend <- TRUE
   }
   data <- data %>%
-    dplyr::select(matches(condi)) %>%
+    dplyr::select(dplyr::matches(condi)) %>%
     as.matrix()
   hits <- limma::lmFit(data, design, weights = weights) %>%
     limma::contrasts.fit(contrast_matrix) %>%

@@ -7,8 +7,9 @@
 trend_partitioning(
   data,
   design_matrix,
-  formula = sd ~ mean + c,
+  formula = sd ~ mean * c,
   eps = 0.1,
+  eps_scale = "log-linear",
   n = 1000,
   verbose = T
 )
@@ -21,6 +22,9 @@ trend_partitioning(
 \item{formula}{Formula for the Gamma regression}
 
 \item{eps}{Size of the integration window}
+
+\item{eps_scale}{If the windows should be linear in log-space ("log-linear")
+or on the real line ("linear").}
 
 \item{n}{Number of integration windows}
 

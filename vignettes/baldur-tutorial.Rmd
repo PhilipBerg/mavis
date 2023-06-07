@@ -53,12 +53,12 @@ yeast_cluster <- yeast %>%
 Then we fit the gamma regression:
 ```{r, glm}
 gam_reg <- yeast_cluster %>% 
-  fit_gamma_regression()
+  fit_gamma_regression(sd ~ mean)
 ```
 Next we perform imputation:
 ```{r, imp}
 yeast_cluster_imp <- yeast_cluster %>% 
-  single_imputation(yeast_design, gam_reg)
+  single_imputation(yeast_design, sd ~ mean)
 ```
 After imputation we re-estimate the mean-variance trends and re-fit the gamma model:
 ```{r, reeset}

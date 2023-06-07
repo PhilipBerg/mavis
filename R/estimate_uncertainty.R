@@ -29,7 +29,7 @@ get_pred_fun <- function(reg) {
     rlang::as_name() %>%
     rlang::sym()
   reg_vars <- reg %>%
-    formula() %>%
+    stats::formula() %>%
     all.vars()
   reg_vars <- reg_vars[!reg_vars %in% c('mean', 'sd', 'sd_p')]
   if (length(reg_vars) != 0) {

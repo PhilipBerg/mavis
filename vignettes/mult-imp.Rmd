@@ -109,7 +109,7 @@ If one wants to inspect the estimated models that can be done similarly with `fi
 ## Data imputation and significance calling
 ### Multiple imputation
 To perform multiple imputations and then run limma on each imputation can efficiently be performed by `multiple_imputation_and_limma`.
-`run_pipeline` fits the needed gamma regressions and has a backend to `multidplyr` for parallel processing.
+`multiple_imputation_and_limma` fits the needed gamma regressions and has a backend to `multidplyr` for parallel processing.
 This can drastically increase the speed when running 1000 or more imputations.
 Here is an example of the `yeast` data running 1000 imputations and using 5 parallel workers.
 First, we need to generate a contrast matrix that indicates what comparisons to perform.
@@ -132,9 +132,8 @@ yeast_multi_imputation_results <- multiple_imputation_and_limma(
   id_col = 'identifier',
   plot_trend = FALSE, # we have already looked at the mean-variance plots
                       # otherwise, putting this flag to TRUE would generate those plots
-  formula_imputation = sd ~ mean + c, # Use the partitioned data for imputation
-                                      # c is the name of the column containing the partitions
-  verbose = FALSE # No need to print the partitioning again
+  formula_imputation = sd_p ~ mean # Use the partitioned data for imputation
+                                       # c is the name of the column containing the partitions
 )
 ```
 `yeast_multi_imputation_results` will now be a `tibble` with each row containing one imputation and one decision from limma.
@@ -167,8 +166,7 @@ First we fit the gamma regression to estimate the variance for the imputation mo
 yeast_psrn <- yeast_psrn %>% 
   # Add mean-variance trends
   calculate_mean_sd_trends(yeast_design)
-gam_reg <- fit_gamma_regression(yeast_psrn, sd ~ mean)
-yeast_one_imputation <- single_imputation(yeast_psrn, yeast_design, gam_reg)
+yeast_one_imputation <- single_imputation(yeast_psrn, yeast_design, sd_p ~ mean)
 ```
 Next, we fit the gamma regression for estimating the precision weights with `fit_gamma_weights`.
 ```{r, yeast_gam}

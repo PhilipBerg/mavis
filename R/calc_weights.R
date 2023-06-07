@@ -14,6 +14,8 @@
 #' @param gamma_reg_model a `glm` object as produced by
 #'   see \code{\link[mavis]{fit_gamma_regression}} for details.
 #'
+#' @param identifier A string for the unique identifiers in the data
+#' @param design A design matrix for the data
 #'
 #' @return The same `data.frame` but with all quantitative values replaced by
 #'  their precision weights.
@@ -36,7 +38,7 @@
 #' gamma_model <- fit_gamma_regression(yeast, sd ~ mean)
 #'
 #' # Generate the weights for the yeast data
-#' calc_weights(yeast, gamma_model)
+#' calc_weights(yeast, 'identifier', design, gamma_model)
 calc_weights <- function(data, identifier, design, gamma_reg_model) {
   estimate_uncertainty(data, identifier, design, gamma_reg_model) %>%
     magrittr::raise_to_power(-2)

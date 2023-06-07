@@ -14,7 +14,7 @@ multiple_imputation_and_limma(
   .robust = TRUE,
   weights = TRUE,
   plot_trend = FALSE,
-  formula_imputation = sd ~ mean,
+  formula_imputation = sd_p ~ mean,
   formula_weights = sd ~ mean,
   ...
 )
@@ -78,7 +78,14 @@ contrast <- limma::makeContrasts(
 
 # Normalize and log-transform the data
 yeast <- psrn(yeast_prog, "identifier")
-\dontrun{
-results <- multiple_imputation_and_limma(yeast, design, contrast, 1000, 5, "identifier")
+\donttest{
+results <- multiple_imputation_and_limma(
+  yeast,
+  design,
+  contrast,
+  10, # Just running 10 imputation for the example purpose, but can be large > 1000
+  1,  # Number of parallel workers to use (will drastically increase the speed)
+  "identifier"
+)
 }
 }

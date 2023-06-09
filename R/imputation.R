@@ -39,7 +39,7 @@ single_imputation <- function(data,
                               formula = sd_p ~ mean,
                               workers = 1,
                               ...) {
-  imp_pars <- get_imputation_pars(data, design, formula, workers)
+  imp_pars <- get_imputation_pars(data, design, formula, workers, ...)
   impute(data, imp_pars)
 }
 
@@ -87,16 +87,11 @@ get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1
   imp_mat <- data %>%
     dplyr::select(matches(condi))
 
-  tmp_na_vals <- imp_mat %>%
-    dplyr::select(matches(condi)) %>%
-    purrr::map(~which(is.na(.x)))
-
-  tmp_na_vals <- tmp_na_vals[purrr::map_lgl(tmp_na_vals, ~ length(.x) != 0)]
 
   mean_vals <- imp_mat %>%
     purrr::map_dbl(mean, na.rm = T)
-  for (i in names(tmp_na_vals)) {
-    data[tmp_na_vals[[i]],i] <- imp_mat[tmp_na_vals[[i]],i] <- mean_vals[i]
+  for (i in names(mis_vals)) {
+    data[mis_vals[[i]],i] <- imp_mat[mis_vals[[i]],i] <- mean_vals[i]
   }
 
   c_check <- stringr::str_detect(
@@ -110,7 +105,6 @@ get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1
   in_pars <- rlang::list2(...)
   rf_pars[names(in_pars)] <- in_pars[names(in_pars)]
   rf <- purrr::partial(ranger::ranger, !!!rf_pars)
-
 
   while (TRUE) {
     tic <- Sys.time()

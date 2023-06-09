@@ -65,7 +65,7 @@ run_limma <- function(data,
                               gamma_reg_model = NULL,
                               id_col = "id",
                               weights = NULL,
-                              .robust = T) {
+                              .robust = TRUE) {
   row_names <- data[[id_col]]
   condi <- design %>%
     get_conditions()

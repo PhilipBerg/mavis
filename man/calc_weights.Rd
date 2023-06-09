@@ -4,7 +4,7 @@
 \alias{calc_weights}
 \title{Calculate Precision Weights From Gamma Regression}
 \usage{
-calc_weights(data, gamma_reg_model)
+calc_weights(data, identifier, design, gamma_reg_model)
 }
 \arguments{
 \item{data}{A \code{data.frame} who's quantitative columns should be converted to

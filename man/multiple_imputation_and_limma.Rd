@@ -78,7 +78,7 @@ contrast <- limma::makeContrasts(
 
 # Normalize and log-transform the data
 yeast <- psrn(yeast_prog, "identifier")
-\dontrun{
+\donttest{
 results <- multiple_imputation_and_limma(yeast, design, contrast, 1000, 5, "identifier")
 }
 }

@@ -14,7 +14,7 @@
 #' colnames(design) <- paste0("ng", c(50, 100))
 #'
 #' # Normalize data
-#' yeast <- yeast_prog %>%
+#' yeast <- yeast %>%
 #'     psrn("identifier") %>%
 #'     # Get mean-variance trends
 #'     calculate_mean_sd_trends(design)
@@ -22,12 +22,43 @@
 #' gam_reg <- fit_gamma_regression(yeast, sd ~ mean)
 #'
 #' # Estimate priors
-#' yeast %>%
-#'     estimate_gamma_priors(design, gam_reg)
-estimate_gamma_priors <- function(data, design_matrix, gamma_reg){
+#' gam_reg %>%
+#'     estimate_gamma_hyperparameters(yeast, design)
+estimate_gamma_hyperparameters <- function(gamma_reg, data, design_matrix){
+  UseMethod("estimate_gamma_hyperparameters")
+}
+
+#' @export
+estimate_gamma_hyperparameters.gmr <- function(gamma_reg, data, design_matrix){
   data %>%
     dplyr::mutate(
       alpha = (1/summary(gamma_reg)$dispersion),
       beta = estimate_beta(gamma_reg, mean, c, alpha)
     )
+}
+
+#' @export
+estimate_beta <- function(model, mean, c, alpha, ...){
+  UseMethod('estimate_beta')
+}
+
+#' @export
+estimate_beta.glm <-
+estimate_beta.gmr <- function(model, mean, c, alpha, ...){
+  reg_vars <- model %>%
+    formula() %>%
+    all.vars()
+  reg_vars <- reg_vars[!reg_vars %in% c("mean", "sd")]
+  reg_vars <- reg_vars %>%
+    paste0(., " = ", ., collapse = ", ") %>%
+    paste0("newdata = data.frame(mean = mean, ", ., ")")
+  nd <- rlang::parse_expr(reg_vars)
+  alpha / rlang::eval_tidy(
+    rlang::call2(
+      stats::predict.glm,
+      object = model,
+      newdata = nd,
+      type = 'response'
+    )
+  )
 }

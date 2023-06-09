@@ -4,7 +4,7 @@
 \alias{single_imputation}
 \title{Single imputation}
 \usage{
-single_imputation(data, design, formula = sd_p ~ mean)
+single_imputation(data, design, formula = sd_p ~ mean, workers = 1)
 }
 \arguments{
 \item{data}{a \code{data.frame} to perform the imputation on, missing values should

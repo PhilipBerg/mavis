@@ -33,10 +33,10 @@ trend_partitioning <- function(data, design_matrix, formula = sd ~ mean + c, eps
     out <- cur_data$data %>%
       cluster_missing_sd(data, design_matrix, formula, eps, n)
   } else {
-    out <-  cur_data$data
+    out <-  cur_data$data %>%
+      dplyr::select(-c(betal, betau, intl, intu, alpha))
   }
-  out %>%
-    dplyr::select(-c(betal, betau, intl, intu, alpha))
+  class(out) <- c('gmr', class(out))
 }
 
 prep_data_for_clustering <- function(data, formula, eps = .1, n = 1000){
@@ -80,11 +80,12 @@ resetimate_gamma_pars <- function(data, formula, gm = NULL){
     )
 }
 
-add_integrals <- function(data, eps = .1, n = 1000, sd_col){
+add_integrals <-function (data, eps, n = 1000, sd_col)
+{
   data %>%
     dplyr::mutate(
-      intu = purrr::pmap_dbl(list(!!sd_col, alpha, betau), num_int_trapz, eps, n),
-      intl = purrr::pmap_dbl(list(!!sd_col, alpha, betal), num_int_trapz, eps, n)
+      intu = num_int_trapz(!!sd_col, alpha, betau, eps, n),
+      intl = num_int_trapz(!!sd_col, alpha, betal, eps, n)
     )
 }
 
@@ -95,30 +96,18 @@ run_procedure <- function(data, formula, eps = .1, n = 1000){
     clust_itt_norm()
 }
 
-num_int_trapz <- function(sd, alpha, beta, eps, n){
-  rng <- c(-eps, eps) + sd
-  x <- seq(rng[1], rng[2], length.out = n)
-  dx <- diff(x)
-  y <- stats::dgamma(x, alpha, beta)
-  sum(c(y[1]/2, y[2:(length(y)-2)], y[length(y)-1]/2)*dx)
-}
-
-estimate_beta <- function(model, mean, c, alpha, ...){
-  reg_vars <- model %>%
-    formula() %>%
-    all.vars()
-  reg_vars <- reg_vars[!reg_vars %in% c("mean", "sd")]
-  reg_vars <- reg_vars %>%
-    paste0(., " = ", ., collapse = ", ") %>%
-    paste0("newdata = data.frame(mean = mean, ", ., ")")
-  nd <- rlang::parse_expr(reg_vars)
-  alpha / rlang::eval_tidy(
-    rlang::call2(
-      stats::predict.glm,
-      object = model,
-      newdata = nd,
-      type = 'response'
-    )
+num_int_trapz <- function (sd, alpha, beta, eps, n)
+{
+  if (length(eps) == 1) {
+    eps <- rep(eps, times = length(sd))
+  }
+  rng <- purrr::map2(sd, eps, ~ c(-.y, .y) + .x)
+  x <- purrr::map(rng, ~ seq(.x[1], .x[2], length.out = n))
+  dx <- purrr::map(x, diff)
+  y <- purrr::pmap(list(x, alpha, beta), stats::dgamma)
+  y <- purrr::map(y, ~ (.x[1:(length(.x)-1)] + .x[2:length(.x)]))
+  purrr::map2_dbl(y, dx,
+                  ~ sum(.x*.y)
   )
 }
 

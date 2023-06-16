@@ -40,7 +40,7 @@ design <- model.matrix(~ 0 + factor(rep(1:2, each = 3)))
 colnames(design) <- paste0("ng", c(50, 100))
 
 # Normalize and log-transform the data
-yeast <- psrn(yeast_prog, "identifier") \%>\%
+yeast <- psrn(yeast, "identifier") \%>\%
   # Add row means and variances
   calculate_mean_sd_trends(design)
 

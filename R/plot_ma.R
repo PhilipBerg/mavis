@@ -35,7 +35,7 @@ utils::globalVariables(c("significant", "median_lfc"))
 #' )
 #'
 #' # Normalize and log-transform the data
-#' yeast <- psrn(yeast_prog, "identifier")
+#' yeast <- psrn(yeast, "identifier")
 #' \dontrun{
 #'
 #' results <- run_pipeline(yeast, design, contrast, 1000, 5, "identifier", TRUE)

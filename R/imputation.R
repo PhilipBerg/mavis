@@ -24,7 +24,7 @@
 #' # Set correct colnames, this is important for fit_gamma_weights
 #' colnames(design) <- paste0("ng", c(50, 100))
 #'
-#' yeast <- yeast_prog %>%
+#' yeast <- yeast %>%
 #'   # Normalize and log-transform the data
 #'   psrn("identifier")
 #'
@@ -40,7 +40,10 @@ single_imputation <- function(data,
                               workers = 1,
                               ...) {
   imp_pars <- get_imputation_pars(data, design, formula, workers, ...)
-  impute(data, imp_pars)
+  for (i in names(imp_pars$mis_vals)) {
+    data[imp_pars$mis_vals[[i]],i] <- imp_pars$means[[i]]
+  }
+  return(data)
 }
 
 impute <- function(data, imp_pars) {

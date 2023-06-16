@@ -58,10 +58,8 @@ trend_partitioning <- function(data, design_matrix, formula = sd ~ mean * c, eps
   else {
     out <- cur_data$data
   }
-  out <- out %>%
+  out %>%
     dplyr::select(-c(betal, betau, intl, intu, alpha))
-  class(out) <- c('gmr', class(out))
-  return(out)
 }
 
 prep_data_for_clustering <- function(data, formula, eps = .1, n = 1000){

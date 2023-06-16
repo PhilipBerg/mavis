@@ -23,7 +23,7 @@ utils::globalVariables(c(".", "sd", "model"))
 #' colnames(design) <- paste0("ng", c(50, 100))
 #'
 #' # Normalize and log transform the data
-#' yeast <- psrn(yeast_prog, "identifier")
+#' yeast <- psrn(yeast, "identifier")
 #'
 #' # Generate the plots
 #' \dontrun{
@@ -84,7 +84,7 @@ plot_mean_sd_trend <- function(data, sd_type) {
 #' colnames(design) <- paste0("ng", c(50, 100))
 #'
 #' # Normalize and log transform the data
-#' yeast <- psrn(yeast_prog, "identifier")
+#' yeast <- psrn(yeast, "identifier")
 #'
 #' # Generate the plot
 #' yeast %>%
@@ -115,7 +115,7 @@ plot_gamma <- function(data, sd_type = 'sd') {
 #' colnames(design) <- paste0("ng", c(50, 100))
 #'
 #' # Normalize and log transform the data
-#' yeast <- psrn(yeast_prog, "identifier")
+#' yeast <- psrn(yeast, "identifier")
 #'
 #' # Generate the plot
 #' \dontrun{

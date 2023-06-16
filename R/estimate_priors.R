@@ -23,14 +23,14 @@
 #' gamma_model <- fit_gamma_regression(yeast, sd ~ mean)
 #'
 #' # Estimate priors
-#' gam_reg %>%
+#' gamma_model %>%
 #'     estimate_gamma_hyperparameters(yeast, design)
 estimate_gamma_hyperparameters <- function(gamma_reg, data, design_matrix){
   UseMethod("estimate_gamma_hyperparameters")
 }
 
 #' @export
-estimate_gamma_hyperparameters.gmr <- function(gamma_reg, data, design_matrix){
+estimate_gamma_hyperparameters.glm <- function(gamma_reg, data, design_matrix){
   if ("c" %in% colnames(data)) {
     c_col <- rlang::sym("c")
   } else {
@@ -49,15 +49,19 @@ estimate_beta <- function(model, mean, c, alpha, ...){
 }
 
 #' @export
-estimate_beta.glm <-
-estimate_beta.gmr <- function(model, mean, c, alpha, ...){
+estimate_beta.glm <- function(model, mean, c, alpha, ...){
   reg_vars <- model %>%
     formula() %>%
     all.vars()
   reg_vars <- reg_vars[!reg_vars %in% c("mean", "sd")]
-  reg_vars <- reg_vars %>%
-    paste0(., " = ", ., collapse = ", ") %>%
-    paste0("newdata = data.frame(mean = mean, ", ., ")")
+  if (length(reg_vars) == 0) {
+    reg_vars <- "newdata = data.frame(mean = mean)"
+  } else {
+    reg_vars <- reg_vars %>%
+      paste0(., " = ", ., collapse = ", ") %>%
+      paste0("newdata = data.frame(mean = mean, ", ., ")")
+  }
+
   nd <- rlang::parse_expr(reg_vars)
   alpha / rlang::eval_tidy(
     rlang::call2(

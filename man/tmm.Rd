@@ -50,7 +50,7 @@ uses the sample with the lowest coefficient of variation as default.
 All estimates are based on features without missing values.
 }
 \examples{
-tmm(yeast_prog)
+tmm(yeast)
 }
 \references{
 \insertAllCited{}

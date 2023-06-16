@@ -48,7 +48,7 @@ are used. Ideally, after the data is normalized all the boxplots should have
 their median aligned close to the global trend line.
 }
 \examples{
-plot_norm_box(yeast_prog, "identifier")
+plot_norm_box(yeast, "identifier")
 # Plot only ng50 samples
-plot_norm_box(yeast_prog, "identifier", plot_target = contains("ng50"))
+plot_norm_box(yeast, "identifier", plot_target = contains("ng50"))
 }

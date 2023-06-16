@@ -4,7 +4,7 @@ output: rmarkdown::html_vignette
 author: "Philip Berg"
 vignette: >
   %\VignetteIndexEntry{baldur-tutorial}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{rmarkdown::render}
   %\VignetteEncoding{UTF-8}
 ---
 
@@ -23,12 +23,12 @@ yeast_design <- model.matrix(~ 0 + factor(rep(1:2, each = 3)))
 colnames(yeast_design) <- paste0("ng", c(50, 100))
 
 # Normalize data
-yeast <- yeast_prog %>% 
+yeast <- yeast %>% 
   psrn('identifier')
 
 # Compare the first and second column of the design matrix
 # with the following contrast matrix
-yeast_contrast <- matrix(1:2, nrow = 1)
+yeast_contrast <- matrix(c(-1, 1), ncol = 1)
 ```
 Importantly, note that the column names of the design matrix are unique subsets of the names of the columns within the conditions:
 ```{r design}
@@ -70,8 +70,8 @@ gam_reg_imp <- yeast_cluster_imp %>%
 Finally, we estimate the parameters needed for `baldur`:
 ```{r,priors}
 # Estimate gamma priors
-yeast_cluster_imp <- yeast_cluster_imp %>% 
-  estimate_gamma_priors(design_matrix = yeast_design, gam_reg_imp)
+yeast_cluster_imp <- gam_reg_imp %>% 
+  estimate_gamma_hyperparameters(yeast_cluster_imp, design_matrix = yeast_design)
 # Get each data points uncertainty
 yeast_unc <- yeast_cluster_imp %>% 
   estimate_uncertainty('identifier', design_matrix = yeast_design, gam_reg_imp)
@@ -83,7 +83,7 @@ Finally we sample the posterior of each row in the data as follows:
 yeast_results <- yeast_cluster_imp %>% 
   # For time purposes we only sample for six rows
   head() %>% 
-  sample_posterior(
+  infer_data_and_decision_model(
     'identifier',
     yeast_design,
     yeast_contrast,
@@ -101,16 +101,14 @@ The suffixes `_eff` and `_rhat` and the prefix `lp__` are the diagnostic variabl
 As of now, Rstan models compiled with a package cannot be ran in parallel using the `multidplyr` backend.
 Therefore, we first need to compile the model, and then we can use the compiled model to run parallel computation:
 ```{r parellel}
-model <- compile_model()
 yeast_results <- yeast_cluster_imp %>% 
   # For time purposes we only sample for 20 rows
   head(20) %>% 
-  sample_posterior(
+  infer_data_and_decision_model(
     'identifier',
     yeast_design,
     yeast_contrast,
     yeast_unc,
-    model,
-    2
+    clusters =  2
   )
 ```

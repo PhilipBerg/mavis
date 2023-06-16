@@ -34,6 +34,6 @@ yeast <- yeast \%>\%
 gamma_model <- fit_gamma_regression(yeast, sd ~ mean)
 
 # Estimate priors
-gam_reg \%>\%
+gamma_model \%>\%
     estimate_gamma_hyperparameters(yeast, design)
 }

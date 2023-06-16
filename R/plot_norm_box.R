@@ -27,9 +27,9 @@ utils::globalVariables(c("where", "value", "name", "method", "med", "condition")
 #' @export
 #'
 #' @examples
-#' plot_norm_box(yeast_prog, "identifier")
+#' plot_norm_box(yeast, "identifier")
 #' # Plot only ng50 samples
-#' plot_norm_box(yeast_prog, "identifier", plot_target = contains("ng50"))
+#' plot_norm_box(yeast, "identifier", plot_target = contains("ng50"))
 plot_norm_box <- function(data,
                           id_col = "id",
                           trim_M = .3,
@@ -42,7 +42,7 @@ plot_norm_box <- function(data,
   plot_target <- rlang::enquo(plot_target)
   plot_target <- check_target(plot_target)
   psrn <- data %>%
-    psrn(
+    baldur::psrn(
       id_col = id_col,
       target = !!norm_target
     ) %>%

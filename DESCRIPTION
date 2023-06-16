@@ -19,10 +19,6 @@ Biarch: true
 Depends: 
     R (>= 3.4.0)
 Imports: 
-    Rcpp (>= 0.12.0),
-    RcppParallel (>= 5.0.1),
-    rstan (>= 2.18.1),
-    rstantools (>= 2.2.0),
     dplyr (>= 1.1.1),
     ggplot2 (>= 3.4.2),
     limma (>= 3.54.2),
@@ -44,17 +40,10 @@ Imports:
     baldur (>= 0.0.1),
     doParallel (>= 1.0.17)
 RdMacros: Rdpack
-LinkingTo: 
-    BH (>= 1.66.0),
-    Rcpp (>= 0.12.0),
-    RcppEigen (>= 0.3.3.3.0),
-    RcppParallel (>= 5.0.1),
-    rstan (>= 2.18.1),
-    StanHeaders (>= 2.18.0)
 SystemRequirements: GNU make
 LazyData: true
 Suggests: 
     knitr,
     rmarkdown,
     cowplot
-VignetteBuilder: knitr
+VignetteBuilder: rmarkdown

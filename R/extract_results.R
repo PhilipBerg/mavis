@@ -55,7 +55,7 @@ utils::globalVariables(
 #' )
 #'
 #' # Normalize and log-transform the data
-#' yeast <- psrn(yeast_prog, "identifier")
+#' yeast <- psrn(yeast, "identifier")
 #' \dontrun{
 #' results <- multiple_imputation_and_limma(yeast, design, contrast, 1000, 5, "identifier", TRUE)
 #' extract_results(yeast, results, .05, 1, "fdr", "identifier")

@@ -12,6 +12,3 @@ For imputation, Mavis produces a more robust estimator of the variance component
 Then, for the statistical testing for mean differences, Mavis makes inferences on the individual data points using the M-V trend.
 This, can either be used with the Baldur framework or the limma framework.
 }
-\references{
-Stan Development Team (2022). RStan: the R interface to Stan. R package version 2.21.5. https://mc-stan.org
-}

@@ -42,7 +42,7 @@ utils::globalVariables(c("logFC", "AveExpr", "P.Value", "rowid"))
 #' )
 #'
 #' # Normalize and log-transform the data
-#' yeast <- psrn(yeast_prog, "identifier")
+#' yeast <- psrn(yeast, "identifier")
 #'
 #' # Fit the gamma regressions
 #' gamma_reg_model <- yeast %>%

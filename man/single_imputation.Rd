@@ -33,12 +33,12 @@ design <- model.matrix(~ 0 + factor(rep(1:2, each = 3)))
 # Set correct colnames, this is important for fit_gamma_weights
 colnames(design) <- paste0("ng", c(50, 100))
 
-yeast <- yeast_prog \%>\%
+yeast <- yeast \%>\%
   # Normalize and log-transform the data
   psrn("identifier")
 
 # Run the imputation
-\dontrun{
+\donttest{
 yeast \%>\%
   single_imputation(design)
 # Run with partitioning

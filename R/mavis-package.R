@@ -10,10 +10,7 @@
 #' @docType package
 #' @name mavis-package
 #' @aliases mavis
-#' @useDynLib mavis, .registration = TRUE
 #' @import methods
-#' @import Rcpp
-#' @importFrom rstan sampling
 ## usethis namespace: start
 #' @importFrom baldur empirical_bayes
 #' @importFrom baldur fit_gamma_regression
@@ -21,8 +18,4 @@
 #' @importFrom baldur psrn
 #' @importFrom baldur weakly_informative
 ## usethis namespace: end
-#'
-#' @references
-#' Stan Development Team (2022). RStan: the R interface to Stan. R package version 2.21.5. https://mc-stan.org
-#'
 NULL

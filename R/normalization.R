@@ -27,7 +27,7 @@ utils::globalVariables(c("load_size", "lfc", "A", "w"))
 #' @export
 #'
 #' @examples
-#' tmm(yeast_prog)
+#' tmm(yeast)
 #' @source \url{https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25}
 #' @references
 #' \insertAllCited{}

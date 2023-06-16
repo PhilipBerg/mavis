@@ -29,8 +29,9 @@ yeast <- yeast \%>\%
     psrn("identifier") \%>\%
     # Get mean-variance trends
     calculate_mean_sd_trends(design)
+
 # Fit gamma regression
-gam_reg <- fit_gamma_regression(yeast, sd ~ mean)
+gamma_model <- fit_gamma_regression(yeast, sd ~ mean)
 
 # Estimate priors
 gam_reg \%>\%

@@ -8,6 +8,9 @@ plot_gamma(data, sd_type = "sd")
 }
 \arguments{
 \item{data}{The data to use for producing the plots.}
+
+\item{sd_type}{To plot the sample standard deviation ("sd") or pooled estimator
+("sd_p").}
 }
 \value{
 a plot with the mean-variance trend used for the precision

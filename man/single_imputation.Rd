@@ -4,17 +4,20 @@
 \alias{single_imputation}
 \title{Single imputation}
 \usage{
-single_imputation(data, design, formula = sd_p ~ mean, workers = 1)
+single_imputation(data, design, formula = sd_p ~ mean, workers = 1, ...)
 }
 \arguments{
 \item{data}{a \code{data.frame} to perform the imputation on, missing values should
 be \code{NA}.}
 
 \item{design}{a design or model matrix as produced by
-\code{\link[stats]{model.matrix}} with column names corresponding to the
-different conditions.}
+\code{\link[stats]{model.matrix}} with column names corresponding to the}
 
-\item{gam_reg}{a gamma regression model}
+\item{formula}{Regression formula for the pooled variance and mean trend}
+
+\item{workers}{Number of parallel workers to use when building the forest}
+
+\item{...}{Additional arguments to \link[ranger:ranger]{ranger::ranger}.}
 }
 \value{
 a \code{data.frame} with \code{NA} values replaced by imputed values.

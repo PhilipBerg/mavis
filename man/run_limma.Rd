@@ -11,7 +11,7 @@ run_limma(
   gamma_reg_model = NULL,
   id_col = "id",
   weights = NULL,
-  .robust = T
+  .robust = TRUE
 )
 }
 \arguments{

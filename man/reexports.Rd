@@ -8,7 +8,6 @@
 \alias{empirical_bayes}
 \alias{weakly_informative}
 \alias{infer_data_and_decision_model}
-\alias{plot_gamma}
 \title{Functions imported from \code{baldur}}
 \keyword{internal}
 \description{
@@ -16,6 +15,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{baldur}{\code{\link[baldur]{empirical_bayes}}, \code{\link[baldur]{fit_gamma_regression}}, \code{\link[baldur]{infer_data_and_decision_model}}, \code{\link[baldur]{plot_gamma}}, \code{\link[baldur]{psrn}}, \code{\link[baldur]{weakly_informative}}}
+  \item{baldur}{\code{\link[baldur]{empirical_bayes}}, \code{\link[baldur]{fit_gamma_regression}}, \code{\link[baldur]{infer_data_and_decision_model}}, \code{\link[baldur]{psrn}}, \code{\link[baldur]{weakly_informative}}}
 }}
 

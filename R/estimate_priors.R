@@ -18,8 +18,9 @@
 #'     psrn("identifier") %>%
 #'     # Get mean-variance trends
 #'     calculate_mean_sd_trends(design)
+#'
 #' # Fit gamma regression
-#' gam_reg <- fit_gamma_regression(yeast, sd ~ mean)
+#' gamma_model <- fit_gamma_regression(yeast, sd ~ mean)
 #'
 #' # Estimate priors
 #' gam_reg %>%
@@ -30,10 +31,15 @@ estimate_gamma_hyperparameters <- function(gamma_reg, data, design_matrix){
 
 #' @export
 estimate_gamma_hyperparameters.gmr <- function(gamma_reg, data, design_matrix){
+  if ("c" %in% colnames(data)) {
+    c_col <- rlang::sym("c")
+  } else {
+    c_col <- NULL
+  }
   data %>%
     dplyr::mutate(
       alpha = (1/summary(gamma_reg)$dispersion),
-      beta = estimate_beta(gamma_reg, mean, c, alpha)
+      beta = estimate_beta(gamma_reg, mean, !!c_col, alpha)
     )
 }
 

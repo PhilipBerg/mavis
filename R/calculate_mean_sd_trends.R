@@ -39,6 +39,9 @@ calculate_mean_sd_trends <- function(data, design_matrix, sdev = c("sample", "po
   }
 }
 
+utils::globalVariables(
+  c("sd_p")
+)
 pooled_sd <- function(data, design) {
   condi  <- get_conditions(design)
 

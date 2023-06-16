@@ -65,7 +65,7 @@ run_limma <- function(data,
                               gamma_reg_model = NULL,
                               id_col = "id",
                               weights = NULL,
-                              .robust = T) {
+                              .robust = TRUE) {
   row_names <- data[[id_col]]
   condi <- design %>%
     get_conditions()
@@ -97,7 +97,7 @@ run_limma <- function(data,
     trend <- TRUE
   }
   data <- data %>%
-    dplyr::select(matches(condi)) %>%
+    dplyr::select(dplyr::matches(condi)) %>%
     as.matrix()
   hits <- limma::lmFit(data, design, weights = weights) %>%
     limma::contrasts.fit(contrast_matrix) %>%

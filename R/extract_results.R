@@ -38,6 +38,8 @@ utils::globalVariables(
 #' @export
 #'
 #' @importFrom utils globalVariables
+#' @importFrom tidyr unnest
+#' @importFrom tidyr pivot_longer
 #'
 #' @examples
 #' # Generate a design matrix for the data

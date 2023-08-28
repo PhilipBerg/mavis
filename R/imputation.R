@@ -103,10 +103,7 @@ get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1
   n_diff <- Inf
 
   imp_mat <- data %>%
-    dplyr::select(matches(condi)) %>%
-    dplyr::mutate(
-      !!!miss_count
-    )
+    dplyr::select(matches(condi))
 
 
   mean_vals <- imp_mat %>%
@@ -114,8 +111,6 @@ get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1
   for (i in names(mis_vals)) {
     data[mis_vals[[i]],i] <- imp_mat[mis_vals[[i]],i] <- mean_vals[i]
   }
-  imp_mat <- imp_mat %>%
-    calculate_mean_sd_trends(design)
 
   c_check <- stringr::str_detect(
     as.character(formula), 'c'
@@ -155,9 +150,6 @@ get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1
         'Previous error:', n_diff, '\t>\tCurrent error:', sum(dif), '\n'
       )
 
-      imp_mat <- imp_mat %>%
-        calculate_mean_sd_trends(design)
-
       n_diff <- sum(dif)
       imp_out <- data
       print_it_time(tic)
@@ -194,7 +186,6 @@ get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1
     rm(cl)
     gc()
   }
-
     return(
       list(
         mis_vals = mis_vals,

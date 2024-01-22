@@ -11,7 +11,8 @@ trend_partitioning(
   eps = 0.1,
   eps_scale = "log-linear",
   n = 1000,
-  verbose = T
+  verbose = T,
+  allowed_repeats = 10
 )
 }
 \arguments{

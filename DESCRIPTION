@@ -47,3 +47,5 @@ Suggests:
     rmarkdown,
     cowplot
 VignetteBuilder: rmarkdown
+biocViews:
+    limma

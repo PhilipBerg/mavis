@@ -15,7 +15,7 @@ plot_gamma_regression(data, design, sd_type = "sd", ...)
 \item{sd_type}{To plot the sample standard deviation ("sd") or pooled estimator
 ("sd_p").}
 
-\item{...}{Additional arguments to \code{\link[mavis]{trend_partitioning}}.}
+\item{...}{Additional arguments to \code{\link[mavis]{multi_trend_partitioning}}.}
 }
 \value{
 a plot with the mean-variance trend used for the precision

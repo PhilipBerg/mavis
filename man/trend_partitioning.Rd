@@ -7,12 +7,9 @@
 trend_partitioning(
   data,
   design_matrix,
-  formula = sd ~ mean * c,
-  eps = 0.1,
-  eps_scale = "log-linear",
-  n = 1000,
-  verbose = T,
-  allowed_repeats = 10
+  formula = sd ~ mean + c,
+  h = 0.1,
+  verbose = T
 )
 }
 \arguments{
@@ -22,12 +19,7 @@ trend_partitioning(
 
 \item{formula}{Formula for the Gamma regression}
 
-\item{eps}{Size of the integration window}
-
-\item{eps_scale}{If the windows should be linear in log-space ("log-linear")
-or on the real line ("linear").}
-
-\item{n}{Number of integration windows}
+\item{h}{Size of the integration window}
 
 \item{verbose}{If the number of points moved should be output}
 }
@@ -38,5 +30,13 @@ A \code{tibble} or \code{data.frame} the partitioning vector \code{c}
 Partitions the data into two mixtures.
 }
 \examples{
-# Please see vignette('baldur') for examples
+# Normalize data
+design <- model.matrix(~ 0 + factor(rep(1:2, each = 3)))
+colnames(design) <- paste0("ng", c(50, 100))
+
+yeast_norm <- yeast \%>\%
+  psrn("identifier")
+yeast_norm \%>\%
+  calculate_mean_sd_trends(design) \%>\%
+  trend_partitioning(design)
 }

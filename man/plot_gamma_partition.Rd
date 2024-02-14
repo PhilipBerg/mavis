@@ -4,12 +4,15 @@
 \alias{plot_gamma_partition}
 \title{Function for plotting the gamma regression used for imputation}
 \usage{
-plot_gamma_partition(data, design, ...)
+plot_gamma_partition(data, design, score = NULL, ...)
 }
 \arguments{
 \item{data}{The data to use for producing the plots.}
 
 \item{design}{A design matrix as produced by \code{\link[stats]{model.matrix}}.}
+
+\item{score}{If \code{NULL} does nothing, if a real value, annotates the plot with
+the \code{score}.}
 
 \item{...}{Additional arguments to \code{\link[mavis]{trend_partitioning}}.}
 }

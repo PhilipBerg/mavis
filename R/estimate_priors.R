@@ -1,3 +1,6 @@
+utils::globalVariables(
+  c("formula")
+)
 #' Estimate Gamma priors for sigma
 #'
 #' @description Estimates the priors for the Bayesian model.
@@ -43,10 +46,17 @@ estimate_gamma_hyperparameters.glm <- function(gamma_reg, data, design_matrix){
     )
 }
 
-#' @export
-estimate_beta <- function(model, mean, c, alpha, ...){
-  UseMethod('estimate_beta')
-}
+# #' @param model
+# #'
+# #' @param mean
+# #' @param c
+# #' @param alpha
+# #' @param ...
+# #'
+# #' @export
+# estimate_beta <- function(model, mean, c, alpha, ...){
+#   UseMethod('estimate_beta')
+# }
 
 #' @export
 estimate_beta.glm <- function(model, mean, c, alpha, ...){

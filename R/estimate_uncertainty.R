@@ -1,5 +1,6 @@
 #' Estimate measurement uncertainty
-#' @description Estimates the measurement uncertainty for each data point using a Gamma regression.
+#' @description Estimates the measurement uncertainty for each data point using
+#'  a Gamma regression.
 #' @param data A `tibble` or `data.frame`
 #' @param identifier Id column
 #' @param design_matrix Cell mean design matrix for the data

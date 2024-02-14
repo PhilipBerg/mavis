@@ -4,7 +4,7 @@ output: rmarkdown::html_vignette
 author: "Philip Berg"
 vignette: >
   %\VignetteIndexEntry{baldur-tutorial}
-  %\VignetteEngine{rmarkdown::render}
+  %\VignetteEngine{knitr::render_html}
   %\VignetteEncoding{UTF-8}
 ---
 

@@ -4,11 +4,18 @@
 \name{mavis-package}
 \alias{mavis-package}
 \alias{mavis}
-\title{The 'mavis' package.}
+\title{mavis: Mean-Variance Modeling In Label-Free Quantitative Proteomics}
 \description{
+Mavis is a new package for label-free quanfication proteomics data analysis. Mavis is completely data-driven from the observed quantifications and can be applied to any post-quantification data set. Mavis can perform both imputation and statistical decisions. For imputation, Mavis produces a more robust estimator of the variance component of the missing data by using the M-V trend. Then, for the statistical testing for mean differences, Mavis makes inferences on the individual data points using the M-V trend. This, can either be used with the Baldur framework or the limma framework.
+
 Mavis is completely data-driven from the observed quantifications and can be applied to any post-quantification data set.
 Mavis can perform both imputation and statistical decisions.
 For imputation, Mavis produces a more robust estimator of the variance component of the missing data by using the M-V trend.
 Then, for the statistical testing for mean differences, Mavis makes inferences on the individual data points using the M-V trend.
 This, can either be used with the Baldur framework or the limma framework.
 }
+\author{
+\strong{Maintainer}: Philip Berg \email{pb1015@msstate.edu} (\href{https://orcid.org/0000-0002-3772-6185}{ORCID})
+
+}
+\keyword{internal}

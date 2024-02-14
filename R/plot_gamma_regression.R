@@ -8,7 +8,7 @@ utils::globalVariables(c(".", "sd", "model"))
 #' @name plt_gam
 #' @param data The data to use for producing the plots.
 #' @param design A design matrix as produced by \code{\link[stats]{model.matrix}}.
-#' @param ... Additional arguments to \code{\link[mavis]{trend_partitioning}}.
+#' @param ... Additional arguments to \code{\link[mavis]{multi_trend_partitioning}}.
 #' @param sd_type To plot the sample standard deviation ("sd") or pooled estimator
 #' ("sd_p").
 #'
@@ -103,11 +103,16 @@ plot_gamma <- function(data, sd_type = 'sd') {
 #' trends for the imputation.
 #' @inheritParams plt_gam
 #' @param design A design matrix as produced by \code{\link[stats]{model.matrix}}.
+#' @param score If `NULL` does nothing, if a real value, annotates the plot with
+#' the `score`.
 #' @param ... Additional arguments to \code{\link[mavis]{trend_partitioning}}.
 #'
 #' @return a plot with the mean-variance trend used for the trend lines used in
 #'  the imputation.
 #' @export
+#'
+#' @importFrom grDevices adjustcolor
+#' @importFrom stats setNames
 #'
 #' @examples
 #' # Produce a design matrix
@@ -123,10 +128,10 @@ plot_gamma <- function(data, sd_type = 'sd') {
 #'   calculate_mean_sd_trends(design) %>%
 #'   plot_gamma_partition(design, verbose = FALSE)
 #' }
-plot_gamma_partition <- function(data, design, ...) {
+plot_gamma_partition <- function(data, design, score = NULL, ...) {
   if(!'c' %in% names(data)){
     data <- data %>%
-      trend_partitioning(design, ...)
+      multi_trend_partitioning(design, ...)
   }
   if (!'formula' %in% ...names()) {
     sd_col <- rlang::sym('sd')
@@ -134,26 +139,23 @@ plot_gamma_partition <- function(data, design, ...) {
     sd_col <- rlang::sym(as.character(rlang::list2(...)[['formula']])[2])
   }
   y_tit <- set_y_tit(sd_col)
-  trend_colors <- purrr::set_names(viridisLite::turbo(2, end = .75), c('Lower', 'Upper'))
   gam_reg <- rlang::eval_tidy(
     rlang::call2(fit_gamma_regression, data = data, !!!rlang::dots_list(...))
   )
-  data %>%
-    dplyr::mutate(
-      c = plyr::mapvalues(c, c('L', 'U'), c('Lower', 'Upper'))
-    ) %>%
+
+  c_nms <- sort(unique(data$c))
+  clrs  <- viridisLite::turbo(length(c_nms), begin = .9, end = 0)
+  clrs2 <- adjustcolor(clrs, alpha.f = .25)
+
+  plt <- data %>%
     tidyr::drop_na(sd) %>%
     ggplot2::ggplot(ggplot2::aes(mean, !!sd_col, color = c)) +
-    ggplot2::geom_point(size = 1 / 10) +
-    ggplot2::stat_function(
-      fun = ~stats::predict.glm(gam_reg, newdata = data.frame(mean = .x, c = 'L'), type = 'response'), color = 'blue'
-    ) +
-    ggplot2::stat_function(
-      fun = ~stats::predict.glm(gam_reg, newdata = data.frame(mean = .x, c = 'U'), type = 'response'), color = 'red'
-    ) +
+    ggplot2::geom_point(size = 1 / 10)
+  plt   <- add_gglayer(plt, c_nms = c_nms, clrs = clrs, gam_reg = gam_reg)
+  plt <- plt +
     ggplot2::theme_classic() +
     ggplot2::ggtitle("After Partitioning") +
-    ggplot2::scale_color_manual('Trend', values = trend_colors) +
+    ggplot2::scale_color_manual('Trend', values = clrs2) +
     ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size=2))) +
     ggplot2::labs(
       x = expression(bold(bar(y))), y = y_tit
@@ -161,6 +163,12 @@ plot_gamma_partition <- function(data, design, ...) {
     ggplot2::theme(
       legend.position = c(.9, .9)
     )
+  if (!is.null(score)) {
+    plt +
+      ggplot2::annotate(geom = 'text', label = paste0("Score: ", round(score, 5)), x = Inf, y = Inf, hjust = 1, vjust = 1)
+  } else {
+    plt
+  }
 }
 
 set_y_tit <- function(sd_col) {
@@ -169,4 +177,18 @@ set_y_tit <- function(sd_col) {
   } else{
     expression(bold(s[p]))
   }
+}
+
+add_gglayer <- function(p, c_nms, clrs, gam_reg) {
+  lines <- purrr::map(seq_along(c_nms),
+                      function(y) ggplot2::stat_function(
+                        fun = ~ stats::predict.glm(
+                          gam_reg,
+                          newdata = data.frame(mean = .x, c = c_nms[y]),
+                          type = "response"
+                        ),
+                        color = clrs[y])
+
+  )
+  p + lines
 }

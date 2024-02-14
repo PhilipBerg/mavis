@@ -19,7 +19,8 @@ estimate_uncertainty(data, identifier, design_matrix, gam_reg)
 A matrix with the uncertainty
 }
 \description{
-Estimates the measurement uncertainty for each data point using a Gamma regression.
+Estimates the measurement uncertainty for each data point using
+a Gamma regression.
 }
 \examples{
 # Please see vignette('baldur') for examples

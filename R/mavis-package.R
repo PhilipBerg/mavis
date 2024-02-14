@@ -1,3 +1,6 @@
+#' @keywords internal
+"_PACKAGE"
+
 #' The 'mavis' package.
 #'
 #' @description
@@ -7,7 +10,6 @@
 #' Then, for the statistical testing for mean differences, Mavis makes inferences on the individual data points using the M-V trend.
 #' This, can either be used with the Baldur framework or the limma framework.
 #'
-#' @docType package
 #' @name mavis-package
 #' @aliases mavis
 #' @import methods

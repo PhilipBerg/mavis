@@ -27,3 +27,7 @@ yeast <- baldur::yeast
 #' @inherit baldur::ups title description source references sections
 #' @export
 ups <- baldur::ups
+
+#' @importFrom baldur estimate_beta
+#' @export
+estimate_beta

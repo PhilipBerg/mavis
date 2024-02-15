@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 # 1. Setup
-First we load `mavis` and then we use the `yeast_prog` dataset and to perform normalization and imputation. In addition, we will setup the model dependent variables we need.
+First we load `mavis` and then we use the `yeast` dataset and to perform normalization and imputation. In addition, we will setup the model dependent variables we need.
 ```{r, setup}
 library(mavis)
 # Setup design matrix
@@ -23,7 +23,7 @@ yeast_design <- model.matrix(~ 0 + factor(rep(1:2, each = 3)))
 colnames(yeast_design) <- paste0("ng", c(50, 100))
 
 # Normalize data
-yeast <- yeast %>% 
+yeast <- yeast %>%
   psrn('identifier')
 
 # Compare the first and second column of the design matrix
@@ -42,43 +42,43 @@ Sidenote: other datasets can be downloaded from figshare (link will be added on 
 # 2. Mixture separation, prior estimation, and uncertainty estimation
 The first step is to add the mean-variance trends to our data matrix:
 ```{r, mv}
-yeast <- yeast %>% 
+yeast <- yeast %>%
   calculate_mean_sd_trends(yeast_design)
 ```
 Next we perform imputation:
 ```{r, imp}
-yeast_imp <- yeast %>% 
+yeast_imp <- yeast %>%
   single_imputation(yeast_design)
 ```
 After imputation we re-estimate the mean-variance trends and partition the data:
 ```{r, reeset}
-yeast_grid <- yeast_imp %>% 
-  calculate_mean_sd_trends(yeast_design) %>% 
+yeast_grid <- yeast_imp %>%
+  calculate_mean_sd_trends(yeast_design) %>%
   grid_search(yeast_design, n_h1 = 20, n_h2 = 20, workers = round(parallel::detectCores()/2))
 yeast_grid
 # Select the dataset with the largest score
 yeast_cluster <- yeast_grid$clustered_data[[1]]
 ```
 Then we fit the gamma regression model:
-```{r, fit_gam} 
-gam_clust_reg <- yeast_cluster %>% 
+```{r, fit_gam}
+gam_clust_reg <- yeast_cluster %>%
   fit_gamma_regression(sd ~ mean + c)
 ```
 Finally, we estimate the uncertainties needed for `baldur`:
 ```{r,priors}
 # Get each data points uncertainty
-yeast_unc <- yeast_cluster %>% 
+yeast_unc <- yeast_cluster %>%
   estimate_uncertainty('identifier', design_matrix = yeast_design, gam_clust_reg)
 ```
 # 3. Run the sampling procedure
 Side note: I highly recommend running `baldur` with the parallel implementation in next section due to the massive speed up.
 Finally we sample the posterior of each row in the data as follows:
 ```{r, posterior}
-yeast_results <- gam_clust_reg %>% 
+yeast_results <- gam_clust_reg %>%
   # Estimate gamma priors
-  estimate_gamma_hyperparameters(yeast_cluster, design_matrix = yeast_design) %>% 
+  estimate_gamma_hyperparameters(yeast_cluster, design_matrix = yeast_design) %>%
   # For time purposes we only sample for six rows
-  head() %>% 
+  head() %>%
   infer_data_and_decision_model(
     'identifier',
     yeast_design,
@@ -86,7 +86,7 @@ yeast_results <- gam_clust_reg %>%
     yeast_unc
   )
 # The top hits then looks as follows:
-yeast_results %>% 
+yeast_results %>%
   dplyr::arrange(err)
 ```
 Here `err` is the probability of error, i.e., the tail-density supporting the null-hypothesis, `lfc` is the estimated log$_2$-fold change, and `sigma` is the common variance.
@@ -97,11 +97,11 @@ The suffixes `_eff` and `_rhat` and the prefix `lp__` are the diagnostic variabl
 As of now, Rstan models compiled with a package cannot be ran in parallel using the `multidplyr` backend.
 Therefore, we first need to compile the model, and then we can use the compiled model to run parallel computation:
 ```{r parellel}
-yeast_results <- gam_clust_reg %>% 
+yeast_results <- gam_clust_reg %>%
   # Estimate gamma priors
-  estimate_gamma_hyperparameters(yeast_cluster, design_matrix = yeast_design) %>% 
+  estimate_gamma_hyperparameters(yeast_cluster, design_matrix = yeast_design) %>%
   # For time purposes we only sample for 20 rows
-  head(20) %>% 
+  head(20) %>%
   infer_data_and_decision_model(
     'identifier',
     yeast_design,

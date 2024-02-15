@@ -1,63 +1,35 @@
-
-#' Single imputation
-#'
-#' Performs a single imputation run and returns the data with NA values replaced
-#' by imputed values.
-#'
+#' Imputation
 #' @param data a `data.frame` to perform the imputation on, missing values should
 #' be `NA`.
 #' @param design a design or model matrix as produced by
 #'  \code{\link[stats]{model.matrix}} with column names corresponding to the
 #' @param formula Regression formula for the pooled variance and mean trend
 #' @param workers Number of parallel workers to use when building the forest
+#' @param imp_pars Imputation parameters to use; as inferred by [get_imputation_pars].
 #' @param ... Additional arguments to [ranger::ranger].
-#' @return a `data.frame` with `NA` values replaced by imputed values.
+#' @name imp
+NULL
+
+utils::globalVariables(c("matches", "sd_p", "predictions"))
+
+#' Estimates the parameters for the imputation model.
+#' @rdname imp
+#'
+#' @return a `list` containing the imputation parameters and corresponding index.
 #' @export
-#' @importFrom ranger ranger
-#' @importFrom doParallel registerDoParallel
-#' @importFrom parallel stopCluster
 #'
 #' @examples
 #' # Generate a design matrix for the data
 #' design <- model.matrix(~ 0 + factor(rep(1:2, each = 3)))
 #'
-#' # Set correct colnames, this is important for fit_gamma_weights
+#' # Set correct colnames, this is important.
 #' colnames(design) <- paste0("ng", c(50, 100))
-#'
-#' yeast <- yeast %>%
-#'   # Normalize and log-transform the data
-#'   psrn("identifier")
-#'
-#' # Run the imputation
 #' \donttest{
-#' yeast %>%
-#'   single_imputation(design)
-#' # Run with partitioning
+#' # Estimate the imputation parameters
+#' imp_pars <- yeast %>%
+#'   psrn("identifier") %>%
+#'   get_imputation_pars(design)
 #' }
-single_imputation <- function(data,
-                              design,
-                              formula = sd_p ~ mean,
-                              workers = 1,
-                              ...) {
-  imp_pars <- get_imputation_pars(data, design, formula, workers, ...)
-  for (i in names(imp_pars$mis_vals)) {
-    data[imp_pars$mis_vals[[i]],i] <- imp_pars$means[[i]]
-  }
-  return(data)
-}
-
-impute <- function(data, imp_pars) {
-  for (i in names(imp_pars$mis_vals)) {
-    data[imp_pars$mis_vals[[i]],i] <- stats::rnorm(
-      n    = length(imp_pars$mis_vals[[i]]),
-      mean = imp_pars$means[[i]],
-      sd   = imp_pars$sd_error[[i]]
-    )
-  }
-  return(data)
-}
-
-utils::globalVariables(c("matches", "sd_p", "predictions"))
 get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1, ...) {
   cat("Estimating Imputation Paramters\n")
   condi <- get_conditions(design)
@@ -186,13 +158,56 @@ get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1
     rm(cl)
     gc()
   }
-    return(
-      list(
-        mis_vals = mis_vals,
-        means = means,
-        sd_error = sd_error
-      )
+  return(
+    list(
+      mis_vals = mis_vals,
+      means = means,
+      sd_error = sd_error
     )
+  )
+}
+
+#' Performs a single imputation run and returns the data with NA values replaced
+#' by imputed values.
+#'
+#' @rdname imp
+#'
+#' @export
+#' @importFrom ranger ranger
+#' @importFrom doParallel registerDoParallel
+#' @importFrom parallel stopCluster
+#' @return a `data.frame` with `NA` values replaced by imputed values.
+#'
+#' @examples
+#' \donttest{
+#' # Run the imputation
+#' yeast %>%
+#'   single_imputation(design, imp_pars = imp_pars)
+#' }
+single_imputation <- function(data,
+                              design,
+                              formula = sd_p ~ mean,
+                              workers = 1,
+                              imp_pars = NULL,
+                              ...) {
+  if (is.null(imp_pars)) {
+    imp_pars <- get_imputation_pars(data, design, formula, workers, ...)
+  }
+  for (i in names(imp_pars$mis_vals)) {
+    data[imp_pars$mis_vals[[i]],i] <- imp_pars$means[[i]]
+  }
+  return(data)
+}
+
+impute <- function(data, imp_pars) {
+  for (i in names(imp_pars$mis_vals)) {
+    data[imp_pars$mis_vals[[i]],i] <- stats::rnorm(
+      n    = length(imp_pars$mis_vals[[i]]),
+      mean = imp_pars$means[[i]],
+      sd   = imp_pars$sd_error[[i]]
+    )
+  }
+  return(data)
 }
 
 print_it_time <- function(tic) {

@@ -16,6 +16,7 @@ multiple_imputation_and_limma(
   plot_trend = FALSE,
   formula_imputation = sd_p ~ mean,
   formula_weights = sd ~ mean,
+  imp_pars = NULL,
   ...
 )
 }
@@ -48,7 +49,9 @@ plotted?}
 
 \item{formula_weights}{Formula for the regression model used for weights}
 
-\item{...}{Additional arguments to \code{\link[mavis]{trend_partitioning}}}
+\item{imp_pars}{Imputation parameters to use; as inferred by \link{get_imputation_pars}.}
+
+\item{...}{Additional arguments to \code{\link[mavis]{multi_trend_partitioning}}}
 }
 \value{
 A tibble with each imputation as a row. The first column contains the

@@ -25,19 +25,19 @@ The yeast data looks as follows:
 
 ```r
 yeast
-#> # A tibble: 2,235 × 10
-#>    identifier                              ng50_1 ng50_2 ng50_3 ng100_1 ng100_2 ng100_3  mean    sd   sd_p
-#>    <chr>                                    <dbl>  <dbl>  <dbl>   <dbl>   <dbl>   <dbl> <dbl> <dbl>  <dbl>
-#>  1 Cre01.g000450.t1.2|PACid:30788617|--321   6.29   6.29   6.36    3.42    2.53   NA     4.98 1.86  0.364 
-#>  2 Cre01.g000800.t1.2|PACid:30788536|--66    7.97   8.00   8.05    7.74    7.78    7.78  7.88 0.134 0.0328
-#>  3 Cre01.g002050.t1.1|PACid:30789101|--408   5.93   5.44   6.24    6.97    6.77    6.82  6.36 0.601 0.295 
-#>  4 Cre01.g002300.t1.2|PACid:30788660|--168   6.53   6.23   5.89    6.52    6.45    6.19  6.30 0.246 0.254 
-#>  5 Cre01.g002300.t1.2|PACid:30788660|--40    9.89  10.1    9.96   10.1    10.4    10.3  10.1  0.192 0.121 
-#>  6 Cre01.g002300.t1.2|PACid:30788660|--69    9.09   8.88   8.64   10.0    10.1    10.0   9.46 0.665 0.162 
-#>  7 Cre01.g004350.t1.2|PACid:30788641|--148   6.52   6.78   6.25    6.82    6.51    6.27  6.53 0.241 0.269 
-#>  8 Cre01.g004500.t1.2|PACid:30789545|--270   1.85  NA     NA       6.55    6.74    6.27  5.35 2.34  0.234 
-#>  9 Cre01.g004500.t1.2|PACid:30789545|--355  12.1   12.1   12.1    11.9    11.8    11.8  11.9  0.155 0.0346
-#> 10 Cre01.g004500.t1.2|PACid:30789545|--402   8.10   6.95   5.11    9.54    9.59    9.55  8.14 1.83  1.07  
+#> # A tibble: 2,235 × 7
+#>    identifier                               ng50_1 ng50_2 ng50_3 ng100_1 ng100_2 ng100_3
+#>    <chr>                                     <dbl>  <dbl>  <dbl>   <dbl>   <dbl>   <dbl>
+#>  1 Cre01.g000450.t1.2|PACid:30788617|--321   77.4    78.1   76.4    11.3    5.99    NA  
+#>  2 Cre01.g000800.t1.2|PACid:30788536|--66   247.    255.   245.    225.   227.     231. 
+#>  3 Cre01.g002050.t1.1|PACid:30789101|--408   60.1    43.2   69.9   133.   113.     118. 
+#>  4 Cre01.g002300.t1.2|PACid:30788660|--168   90.8    74.9   55.1    96.8   90.1     76.7
+#>  5 Cre01.g002300.t1.2|PACid:30788660|--40   932.   1096.   925.   1179.  1377.    1335. 
+#>  6 Cre01.g002300.t1.2|PACid:30788660|--69   537.    469.   369.   1106.  1127.    1099. 
+#>  7 Cre01.g004350.t1.2|PACid:30788641|--148   90.6   110.    70.6   119.    94.5     81.0
+#>  8 Cre01.g004500.t1.2|PACid:30789545|--270    3.56   NA     NA      99.0  111.      81.0
+#>  9 Cre01.g004500.t1.2|PACid:30789545|--355 4376.   4311.  3952.   3901.  3643.    3697. 
+#> 10 Cre01.g004500.t1.2|PACid:30789545|--402  271.    123.    32.0   787.   799.     785. 
 #> # ℹ 2,225 more rows
 ```
 where the `identifier` is a column that uniquely maps each cysteine to the observations in `ng50_*` or `ng100_*` (which are the relative concentrations the yeast cysteines were spiked in with) and the integer at the end indicates different repeated experiments.
@@ -68,24 +68,6 @@ The function `plot_norm_box` generates boxplots of the raw data after log$_{2}$ 
 
 ```r
 plot_norm_box(yeast, 'identifier')
-#> Warning: There were 2 warnings in `dplyr::mutate()`.
-#> The first warning was:
-#> ℹ In argument: `lfc = log2((value/load_size)/(ng100_1/reference_loading_size))`.
-#> Caused by warning:
-#> ! NaNs produced
-#> ℹ Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.
-#> Warning: There were 5 warnings in `dplyr::mutate()`.
-#> The first warning was:
-#> ℹ In argument: `dplyr::across(where(is.numeric), log2)`.
-#> Caused by warning:
-#> ! NaNs produced
-#> ℹ Run `dplyr::last_dplyr_warnings()` to see the 4 remaining warnings.
-#> There were 5 warnings in `dplyr::mutate()`.
-#> The first warning was:
-#> ℹ In argument: `dplyr::across(where(is.numeric), log2)`.
-#> Caused by warning:
-#> ! NaNs produced
-#> ℹ Run `dplyr::last_dplyr_warnings()` to see the 4 remaining warnings.
 ```
 
 ![plot of chunk norm_vis_yeast](norm_vis_yeast-1.png)
@@ -96,18 +78,6 @@ To exemplify we use `psrn` and `tmm` as follows:
 ```r
 yeast_psrn <- psrn(yeast, 'identifier')
 yeast_tmm  <- tmm(yeast)
-#> Warning: There were 2 warnings in `dplyr::mutate()`.
-#> The first warning was:
-#> ℹ In argument: `lfc = log2((value/load_size)/(ng100_1/reference_loading_size))`.
-#> Caused by warning:
-#> ! NaNs produced
-#> ℹ Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.
-#> Warning: There were 5 warnings in `dplyr::mutate()`.
-#> The first warning was:
-#> ℹ In argument: `dplyr::across(where(is.numeric), log2)`.
-#> Caused by warning:
-#> ! NaNs produced
-#> ℹ Run `dplyr::last_dplyr_warnings()` to see the 4 remaining warnings.
 ```
 Both `psrn` and `tmm` first normalizes the data and then log$_{2}$ transforms it unless the flag `log=FALSE` is used.
 For the `ups` data we do the same thing:
@@ -170,30 +140,25 @@ Next, we will calculate the M-V trend and determine the integration windows for 
 yeast_grid <- yeast_psrn %>% 
   calculate_mean_sd_trends(yeast_design) %>% 
   grid_search(yeast_design, n_h1 = 20, n_h2 = 20, workers = round(parallel::detectCores()/2))
-#> Warning in min(x): no non-missing arguments to min; returning Inf
-#> Warning in max(x): no non-missing arguments to max; returning -Inf
-#> Error in `cluster_call()`:
-#> ! Remote computation failed in worker 1
-#> Caused by error:
-#> ℹ In argument: `s = purrr::pmap(...)`.
-#> Caused by error in `purrr::pmap()`:
-#> ℹ In index: 1.
-#> Caused by error in `seq.default()`:
-#> ! 'from' must be a finite number
+```
+
+![plot of chunk yeast_grid](yeast_grid-1.png)
+
+```r
 yeast_grid
 #> # A tibble: 400 × 5
-#>         h1      h2 formula       s clustered_data       
-#>      <dbl>   <dbl> <list>    <dbl> <list>               
-#>  1 0.0875  0.250   <formula>  282. <tibble [2,235 × 11]>
-#>  2 0.0875  0.331   <formula>  265. <tibble [2,235 × 11]>
-#>  3 0.0875  0.413   <formula>  230. <tibble [2,235 × 11]>
-#>  4 0.00620 0.250   <formula>  229. <tibble [2,235 × 11]>
-#>  5 0.169   0.250   <formula>  229. <tibble [2,235 × 11]>
-#>  6 0.00620 0.331   <formula>  228. <tibble [2,235 × 11]>
-#>  7 0.169   0.331   <formula>  219. <tibble [2,235 × 11]>
-#>  8 0.00620 0.413   <formula>  208. <tibble [2,235 × 11]>
-#>  9 0.00620 0.00620 <formula>  198. <tibble [2,235 × 11]>
-#> 10 0.00620 0.0875  <formula>  198. <tibble [2,235 × 11]>
+#>         h1      h2 formula       s clustered_data         
+#>      <dbl>   <dbl> <list>    <dbl> <list>                 
+#>  1 0.00782 0.213   <formula>  426. <spc_tbl_ [2,235 × 11]>
+#>  2 0.110   0.213   <formula>  397. <spc_tbl_ [2,235 × 11]>
+#>  3 0.00782 0.315   <formula>  374. <spc_tbl_ [2,235 × 11]>
+#>  4 0.00782 0.418   <formula>  365. <spc_tbl_ [2,235 × 11]>
+#>  5 0.213   0.315   <formula>  341. <spc_tbl_ [2,235 × 11]>
+#>  6 0.00782 0.00782 <formula>  332. <spc_tbl_ [2,235 × 11]>
+#>  7 0.00782 0.110   <formula>  331. <spc_tbl_ [2,235 × 11]>
+#>  8 0.110   0.00782 <formula>  330. <spc_tbl_ [2,235 × 11]>
+#>  9 0.110   0.520   <formula>  328. <spc_tbl_ [2,235 × 11]>
+#> 10 0.110   0.418   <formula>  322. <spc_tbl_ [2,235 × 11]>
 #> # ℹ 390 more rows
 # Select the best dataset
 yeast_psrn <- yeast_grid$clustered_data[[1]]
@@ -243,74 +208,94 @@ yeast_multi_imputation_results <- multiple_imputation_and_limma(
                                        # c is the name of the column containing the partitions
 )
 #> Estimating Imputation Paramters
-#> Previous error: Inf 	>	Current error: 0 
+#> Previous error: Inf 	>	Current error: 5.355256 
 #> Iteration time:
-#>  2.408028e-05 secs 
+#>  5.074644 secs 
 #> 
-#> Previous error: 0 	<	Current error: 0 	Breaking 
+#> Previous error: 5.355256 	>	Current error: 0.1003162 
 #> Iteration time:
-#>  1.120567e-05 secs
+#>  5.149383 secs 
+#> 
+#> Previous error: 0.1003162 	>	Current error: 0.03671451 
+#> Iteration time:
+#>  5.144381 secs 
+#> 
+#> Previous error: 0.03671451 	>	Current error: 0.03201275 
+#> Iteration time:
+#>  5.098952 secs 
+#> 
+#> Previous error: 0.03201275 	>	Current error: 0.01669368 
+#> Iteration time:
+#>  5.128677 secs 
+#> 
+#> Previous error: 0.01669368 	>	Current error: 0.01017484 
+#> Iteration time:
+#>  5.138071 secs 
+#> 
+#> Previous error: 0.01017484 	<	Current error: 0.01217177 	Breaking 
+#> Iteration time:
+#>  5.166959 secs
 ```
 `yeast_multi_imputation_results` will now be a `tibble` with each row containing one imputation and one decision from limma.
 
 ```r
 yeast_multi_imputation_results
 #> # A tibble: 20 × 3
-#>    imputation imputed_data          limma_results       
-#>         <int> <list>                <list>              
-#>  1          1 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#>  2          2 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#>  3          3 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#>  4          4 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#>  5          5 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#>  6          6 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#>  7          7 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#>  8          8 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#>  9          9 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#> 10         10 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#> 11         11 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#> 12         12 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#> 13         13 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#> 14         14 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#> 15         15 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#> 16         16 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#> 17         17 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#> 18         18 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#> 19         19 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
-#> 20         20 <tibble [2,235 × 11]> <tibble [2,235 × 5]>
+#>    imputation imputed_data            limma_results       
+#>         <int> <list>                  <list>              
+#>  1          1 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#>  2          2 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#>  3          3 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#>  4          4 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#>  5          5 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#>  6          6 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#>  7          7 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#>  8          8 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#>  9          9 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#> 10         10 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#> 11         11 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#> 12         12 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#> 13         13 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#> 14         14 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#> 15         15 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#> 16         16 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#> 17         17 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#> 18         18 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#> 19         19 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
+#> 20         20 <spc_tbl_ [2,235 × 11]> <tibble [2,235 × 5]>
 ```
 If one wants to access one particular imputation or decision that can be done with `$` and `[[` as follows.
 
 ```r
 yeast_multi_imputation_results$imputed_data[[5]]
 #> # A tibble: 2,235 × 11
-#>    identifier                                  ng50_1 ng50_2 ng50_3 ng100_1 ng100_2 ng100_3  mean     sd c       sd_p
-#>    <chr>                                        <dbl>  <dbl>  <dbl>   <dbl>   <dbl>   <dbl> <dbl>  <dbl> <chr>  <dbl>
-#>  1 Cre01.g000800.t1.2|PACid:30788536|--66        7.97   8.00   8.05    7.74    7.78    7.78  7.88 0.134  a     0.0328
-#>  2 Cre01.g002300.t1.2|PACid:30788660|--168       6.53   6.23   5.89    6.52    6.45    6.19  6.30 0.246  a     0.254 
-#>  3 Cre01.g002300.t1.2|PACid:30788660|--40        9.89  10.1    9.96   10.1    10.4    10.3  10.1  0.192  a     0.121 
-#>  4 Cre01.g004350.t1.2|PACid:30788641|--148       6.52   6.78   6.25    6.82    6.51    6.27  6.53 0.241  a     0.269 
-#>  5 Cre01.g004500.t1.2|PACid:30789545|--355      12.1   12.1   12.1    11.9    11.8    11.8  11.9  0.155  a     0.0346
-#>  6 Cre01.g004500.t1.2|PACid:30789545|--444      11.9   11.8   11.8    11.6    11.5    11.6  11.7  0.157  a     0.0669
-#>  7 Cre01.g004900.t1.2|PACid:30788980|--6-12      8.70   8.58   8.55    8.75    8.72    8.80  8.68 0.0975 a     0.0615
-#>  8 Cre01.g004950.t1.1|PACid:30788473|--160       7.57   7.38   7.69    7.61    7.57    7.75  7.59 0.129  a     0.131 
-#>  9 Cre01.g005050.t1.1|PACid:30788576|--188-196   9.38   9.44   9.37    9.75    9.71    9.63  9.55 0.170  a     0.0515
-#> 10 Cre01.g005050.t1.1|PACid:30788576|--244      11.5   11.6   11.6    11.2    11.4    11.4  11.5  0.156  a     0.0976
+#>    identifier                              ng50_1 ng50_2 ng50_3 ng100_1 ng100_2 ng100_3  mean    sd c       sd_p
+#>    <chr>                                    <dbl>  <dbl>  <dbl>   <dbl>   <dbl>   <dbl> <dbl> <dbl> <chr>  <dbl>
+#>  1 Cre01.g000450.t1.2|PACid:30788617|--321   6.29   6.29   6.36    3.42    2.53    4.58  4.98 1.86  c     0.364 
+#>  2 Cre01.g000800.t1.2|PACid:30788536|--66    7.97   8.00   8.05    7.74    7.78    7.78  7.88 0.134 a     0.0328
+#>  3 Cre01.g002050.t1.1|PACid:30789101|--408   5.93   5.44   6.24    6.97    6.77    6.82  6.36 0.601 b     0.295 
+#>  4 Cre01.g002300.t1.2|PACid:30788660|--168   6.53   6.23   5.89    6.52    6.45    6.19  6.30 0.246 a     0.254 
+#>  5 Cre01.g002300.t1.2|PACid:30788660|--40    9.89  10.1    9.96   10.1    10.4    10.3  10.1  0.192 a     0.121 
+#>  6 Cre01.g002300.t1.2|PACid:30788660|--69    9.09   8.88   8.64   10.0    10.1    10.0   9.46 0.665 b     0.162 
+#>  7 Cre01.g004350.t1.2|PACid:30788641|--148   6.52   6.78   6.25    6.82    6.51    6.27  6.53 0.241 a     0.269 
+#>  8 Cre01.g004500.t1.2|PACid:30789545|--270   1.85   1.59   1.75    6.55    6.74    6.27  5.35 2.34  c     0.234 
+#>  9 Cre01.g004500.t1.2|PACid:30789545|--355  12.1   12.1   12.1    11.9    11.8    11.8  11.9  0.155 a     0.0346
+#> 10 Cre01.g004500.t1.2|PACid:30789545|--402   8.10   6.95   5.11    9.54    9.59    9.55  8.14 1.83  c     1.07  
 #> # ℹ 2,225 more rows
 yeast_multi_imputation_results$limma_results[[5]]
 #> # A tibble: 2,235 × 5
 #>    identifier                                  lfc  mean    p_val comparison   
 #>    <chr>                                     <dbl> <dbl>    <dbl> <chr>        
-#>  1 Cre06.g263450.t1.2|PACid:30779125|--303    3.53 12.1  4.75e-10 ng100 vs ng50
-#>  2 sp|P00549|KPYK1_YEAST--418                 3.16 13.4  9.47e-10 ng100 vs ng50
-#>  3 Cre02.g114600.t1.2|PACid:30784840|--172    2.16 12.4  2.68e- 9 ng100 vs ng50
-#>  4 gi|41179066|ref|NP_958423.1|--48-51-54-58  2.38 12.6  2.87e- 9 ng100 vs ng50
-#>  5 Cre09.g386650.t1.2|PACid:30781165|--257    2.07 12.1  5.50e- 9 ng100 vs ng50
-#>  6 Cre02.g120150.t1.2|PACid:30786468|--128    1.80 12.6  8.14e- 9 ng100 vs ng50
-#>  7 Cre10.g420750.t1.2|PACid:30790763|--50-53  4.16  9.47 2.41e- 9 ng100 vs ng50
-#>  8 Cre03.g182551.t1.2|PACid:30787991|--130    1.07 14.8  7.57e- 9 ng100 vs ng50
-#>  9 sp|P05759|RS27A_YEAST--121-126             1.76 11.8  1.26e- 8 ng100 vs ng50
-#> 10 sp|P00358|G3P2_YEAST--150                  1.06 12.1  1.43e- 8 ng100 vs ng50
+#>  1 Cre06.g263450.t1.2|PACid:30779125|--303    3.53 12.1  6.80e-10 ng100 vs ng50
+#>  2 sp|P00549|KPYK1_YEAST--418                 3.16 13.4  1.37e- 9 ng100 vs ng50
+#>  3 Cre02.g114600.t1.2|PACid:30784840|--172    2.16 12.4  3.76e- 9 ng100 vs ng50
+#>  4 gi|41179066|ref|NP_958423.1|--48-51-54-58  2.38 12.6  3.94e- 9 ng100 vs ng50
+#>  5 Cre09.g386650.t1.2|PACid:30781165|--257    2.07 12.1  7.75e- 9 ng100 vs ng50
+#>  6 Cre10.g420750.t1.2|PACid:30790763|--50-53  4.16  9.47 3.04e- 9 ng100 vs ng50
+#>  7 Cre02.g120150.t1.2|PACid:30786468|--128    1.80 12.6  1.12e- 8 ng100 vs ng50
+#>  8 Cre03.g182551.t1.2|PACid:30787991|--130    1.07 14.8  1.13e- 8 ng100 vs ng50
+#>  9 sp|P05759|RS27A_YEAST--121-126             1.76 11.8  1.72e- 8 ng100 vs ng50
+#> 10 sp|P00358|G3P2_YEAST--150                  1.06 12.1  2.33e- 8 ng100 vs ng50
 #> # ℹ 2,225 more rows
 ```
 which shows the results of the fifth imputation.
@@ -338,13 +323,33 @@ yeast_psrn <- yeast_psrn %>%
   calculate_mean_sd_trends(yeast_design)
 yeast_one_imputation <- single_imputation(yeast_psrn, yeast_design, sd_p ~ mean)
 #> Estimating Imputation Paramters
-#> Previous error: Inf 	>	Current error: 0 
+#> Previous error: Inf 	>	Current error: 5.622436 
 #> Iteration time:
-#>  2.217293e-05 secs 
+#>  4.999355 secs 
 #> 
-#> Previous error: 0 	<	Current error: 0 	Breaking 
+#> Previous error: 5.622436 	>	Current error: 0.109497 
 #> Iteration time:
-#>  1.120567e-05 secs
+#>  5.154183 secs 
+#> 
+#> Previous error: 0.109497 	>	Current error: 0.04923895 
+#> Iteration time:
+#>  5.102554 secs 
+#> 
+#> Previous error: 0.04923895 	>	Current error: 0.04008596 
+#> Iteration time:
+#>  5.538206 secs 
+#> 
+#> Previous error: 0.04008596 	>	Current error: 0.02151609 
+#> Iteration time:
+#>  5.124643 secs 
+#> 
+#> Previous error: 0.02151609 	>	Current error: 0.01042434 
+#> Iteration time:
+#>  5.158614 secs 
+#> 
+#> Previous error: 0.01042434 	<	Current error: 0.01105823 	Breaking 
+#> Iteration time:
+#>  5.118191 secs
 ```
 Next, we fit the gamma regression for estimating the precision weights with `fit_gamma_weights`.
 

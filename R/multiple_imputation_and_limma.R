@@ -28,7 +28,8 @@ utils::globalVariables(
 #'  plotted?
 #' @param formula_imputation Formula for the regression model used for imputation
 #' @param formula_weights Formula for the regression model used for weights
-#' @param ... Additional arguments to \code{\link[mavis]{trend_partitioning}}
+#' @param imp_pars Imputation parameters to use; as inferred by [get_imputation_pars].
+#' @param ... Additional arguments to \code{\link[mavis]{multi_trend_partitioning}}
 #'
 #' @return A tibble with each imputation as a row. The first column contains the
 #'     imputation number, the second contains the imputed data, and the last
@@ -73,6 +74,7 @@ multiple_imputation_and_limma <- function(data,
                                           plot_trend = FALSE,
                                           formula_imputation = sd_p ~ mean,
                                           formula_weights = sd ~ mean,
+                                          imp_pars = NULL,
                                           ...) {
   # Fit gamma models
   data <- data %>%
@@ -85,13 +87,13 @@ multiple_imputation_and_limma <- function(data,
     )
   ) {
     data <- data %>%
-      trend_partitioning(design, formula_weights, ...)
+      multi_trend_partitioning(design, formula_weights, ...)
   }
   # gamma_reg_imp <- fit_gamma_regression(data, formula_imputation)
   # if(formula_imputation == formula_weights & weights){
   #   gamma_reg_weights <- gamma_reg_imp
   # } else
-  if(weights){
+  if (weights) {
     gamma_reg_weights <- fit_gamma_regression(data, formula_weights)
   } else{
     gamma_reg_weights <- NULL
@@ -105,16 +107,20 @@ multiple_imputation_and_limma <- function(data,
     any(stringr::str_detect(
       as.character(formula_imputation),
       'c')
-    )
+    ) & is.null(imp_pars)
   ) {
     cat('Trend paritioning for imputation\n')
-    imp_pars <- data %>%
-      trend_partitioning(design, formula_imputation, ...)
+    imp_data <- data %>%
+      multi_trend_partitioning(design, formula_imputation, ...)
   } else {
-    imp_pars <- data
+    imp_data <- data
   }
-  imp_pars <- imp_pars %>%
-    get_imputation_pars(design, formula_imputation, workers, ...)
+
+  if (is.null(imp_pars)) {
+    imp_pars <- imp_data %>%
+      get_imputation_pars(design, formula_imputation, workers, ...)
+  }
+
   if (workers != 1) {
     cluster <- multidplyr::new_cluster(workers)
     multidplyr::cluster_library(

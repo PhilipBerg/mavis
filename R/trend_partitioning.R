@@ -243,8 +243,8 @@ multi_trend_partitioning <- function(data, design_matrix,
 #' @param workers Number of parallel workers to use
 #' @param n_h1,n_h2 Number of window sizes to use for `h1`/`h2` if default
 #' grid is used.
-#' @param h1,h2 A sequence of windows sizes to use in the grid search.
-#' @param rng Defaults to search over a proportion of the `rng` of the sd.
+#' @param h1_prop,h2_prop Start and end proportion of the range of the sd
+#' for the window sizes.
 #'
 #' @return A tibble of integration windows sorted from highest (best) to lowest
 #' (worst) penalized likelihood values.
@@ -262,12 +262,17 @@ multi_trend_partitioning <- function(data, design_matrix,
 #'   grid_search(design, n_h1 = 2, n_h2 = 2)
 grid_search <- function(
     data, design_matrix, penalty = p, workers = 1,
-    n_h1 = 5, n_h2 = 5, rng = diff(range(data$sd, na.rm = TRUE)),
-    h1 = seq(1e-3, .25, length.out = n_h1)*rng,
-    h2 = seq(1e-3, .25, length.out = n_h1)*rng,
+    n_h1 = 5, n_h2 = 5, h1_prop = c(1e-3, .25),
+    h2_prop = c(1e-3, .25),
     formula = c(sd ~ mean + c),
     plot = TRUE
 ) {
+
+  sd_col <- as.character(formula[[1]])[2]
+  rng <- diff(range(data[[sd_col]], na.rm = TRUE))
+
+  h1 <- seq(h1_prop[1], h1_prop[2], length.out = n_h1)*rng
+  h2 <- seq(h2_prop[1], h2_prop[2], length.out = n_h2)*rng
 
   if (anyNA(c(h1, h2))) browser()
   out <- tidyr::expand_grid(

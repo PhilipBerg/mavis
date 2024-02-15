@@ -4,7 +4,8 @@ utils::globalVariables(
     "median_mean.x",
     "median_mean.y",
     "comparison",
-    "median_mean"
+    "median_mean",
+    ".data"
   )
 )
 #' Extract the results from running the multiple imputations

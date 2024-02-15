@@ -46,21 +46,9 @@ estimate_gamma_hyperparameters.glm <- function(gamma_reg, data, design_matrix){
     )
 }
 
-# #' @param model
-# #'
-# #' @param mean
-# #' @param c
-# #' @param alpha
-# #' @param ...
-# #'
-# #' @export
-# estimate_beta <- function(model, mean, c, alpha, ...){
-#   UseMethod('estimate_beta')
-# }
-
 #' @export
-estimate_beta.glm <- function(model, mean, c, alpha, ...){
-  reg_vars <- model %>%
+estimate_beta.glm <- function(reg, mean, c, alpha, ...){
+  reg_vars <- reg %>%
     formula() %>%
     all.vars()
   reg_vars <- reg_vars[!reg_vars %in% c("mean", "sd")]
@@ -76,7 +64,7 @@ estimate_beta.glm <- function(model, mean, c, alpha, ...){
   alpha / rlang::eval_tidy(
     rlang::call2(
       stats::predict.glm,
-      object = model,
+      object = reg,
       newdata = nd,
       type = 'response'
     )

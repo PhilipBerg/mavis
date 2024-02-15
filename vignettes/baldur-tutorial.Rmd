@@ -3,8 +3,8 @@ title: "Baldur-Tutorial"
 output: rmarkdown::html_vignette
 author: "Philip Berg"
 vignette: >
-  %\VignetteIndexEntry{baldur-tutorial}
-  %\VignetteEngine{knitr::render_html}
+  %\VignetteIndexEntry{mult-imp}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
@@ -45,42 +45,38 @@ The first step is to add the mean-variance trends to our data matrix:
 yeast <- yeast %>% 
   calculate_mean_sd_trends(yeast_design)
 ```
-Next is to infer the mixture of the data:
-```{r cluster}
-yeast_cluster <- yeast %>% 
-  trend_partitioning(design_matrix = yeast_design)
-```
-Then we fit the gamma regression:
-```{r, glm}
-gam_reg <- yeast_cluster %>% 
-  fit_gamma_regression(sd ~ mean)
-```
 Next we perform imputation:
 ```{r, imp}
-yeast_cluster_imp <- yeast_cluster %>% 
-  single_imputation(yeast_design, sd ~ mean)
+yeast_imp <- yeast %>% 
+  single_imputation(yeast_design)
 ```
-After imputation we re-estimate the mean-variance trends and re-fit the gamma model:
+After imputation we re-estimate the mean-variance trends and partition the data:
 ```{r, reeset}
-yeast_cluster_imp <- yeast_cluster_imp %>% 
-  calculate_mean_sd_trends(yeast_design)
-gam_reg_imp <- yeast_cluster_imp %>% 
-  fit_gamma_regression()
+yeast_grid <- yeast_imp %>% 
+  calculate_mean_sd_trends(yeast_design) %>% 
+  grid_search(yeast_design, n_h1 = 20, n_h2 = 20, workers = round(parallel::detectCores()/2))
+yeast_grid
+# Select the dataset with the largest score
+yeast_cluster <- yeast_grid$clustered_data[[1]]
 ```
-Finally, we estimate the parameters needed for `baldur`:
+Then we fit the gamma regression model:
+```{r, fit_gam} 
+gam_clust_reg <- yeast_cluster %>% 
+  fit_gamma_regression(sd ~ mean + c)
+```
+Finally, we estimate the uncertainties needed for `baldur`:
 ```{r,priors}
-# Estimate gamma priors
-yeast_cluster_imp <- gam_reg_imp %>% 
-  estimate_gamma_hyperparameters(yeast_cluster_imp, design_matrix = yeast_design)
 # Get each data points uncertainty
-yeast_unc <- yeast_cluster_imp %>% 
-  estimate_uncertainty('identifier', design_matrix = yeast_design, gam_reg_imp)
+yeast_unc <- yeast_cluster %>% 
+  estimate_uncertainty('identifier', design_matrix = yeast_design, gam_clust_reg)
 ```
 # 3. Run the sampling procedure
 Side note: I highly recommend running `baldur` with the parallel implementation in next section due to the massive speed up.
 Finally we sample the posterior of each row in the data as follows:
 ```{r, posterior}
-yeast_results <- yeast_cluster_imp %>% 
+yeast_results <- gam_clust_reg %>% 
+  # Estimate gamma priors
+  estimate_gamma_hyperparameters(yeast_cluster, design_matrix = yeast_design) %>% 
   # For time purposes we only sample for six rows
   head() %>% 
   infer_data_and_decision_model(
@@ -101,7 +97,9 @@ The suffixes `_eff` and `_rhat` and the prefix `lp__` are the diagnostic variabl
 As of now, Rstan models compiled with a package cannot be ran in parallel using the `multidplyr` backend.
 Therefore, we first need to compile the model, and then we can use the compiled model to run parallel computation:
 ```{r parellel}
-yeast_results <- yeast_cluster_imp %>% 
+yeast_results <- gam_clust_reg %>% 
+  # Estimate gamma priors
+  estimate_gamma_hyperparameters(yeast_cluster, design_matrix = yeast_design) %>% 
   # For time purposes we only sample for 20 rows
   head(20) %>% 
   infer_data_and_decision_model(

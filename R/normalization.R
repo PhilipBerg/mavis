@@ -71,10 +71,10 @@ tmm <- function(data,
     dplyr::group_by(sample) %>%
     dplyr::filter(
       dplyr::between(
-        lfc, stats::quantile(lfc, trim_M), stats::quantile(lfc, 1 - trim_M)
+        lfc, stats::quantile(lfc, trim_M, na.rm = T), stats::quantile(lfc, 1 - trim_M, na.rm = T)
       ) &
         dplyr::between(
-          A, stats::quantile(A, trim_A), stats::quantile(A, 1 - trim_A)
+          A, stats::quantile(A, trim_A, na.rm = T), stats::quantile(A, 1 - trim_A, na.rm = T)
         )
     ) %>%
     dplyr::summarise(

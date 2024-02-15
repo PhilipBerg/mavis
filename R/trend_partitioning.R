@@ -225,7 +225,7 @@ multi_trend_partitioning <- function(data, design_matrix,
     print(plt)
   }
   current_data <- current_data %>%
-    select(-any_of(c("alpha", "beta")))
+    select(-any_of(c("alpha", "beta", "tmp_global")))
   list(
     data  = current_data,
     score = best_score
@@ -243,7 +243,8 @@ multi_trend_partitioning <- function(data, design_matrix,
 #' @param workers Number of parallel workers to use
 #' @param n_h1,n_h2 Number of window sizes to use for `h1`/`h2` if default
 #' grid is used.
-#' @param h1,h2 A sequence of windows sizes to use in the grid search
+#' @param h1,h2 A sequence of windows sizes to use in the grid search.
+#' @param rng Defaults to search over a proportion of the `rng` of the sd.
 #'
 #' @return A tibble of integration windows sorted from highest (best) to lowest
 #' (worst) penalized likelihood values.
@@ -261,13 +262,14 @@ multi_trend_partitioning <- function(data, design_matrix,
 #'   grid_search(design, n_h1 = 2, n_h2 = 2)
 grid_search <- function(
     data, design_matrix, penalty = p, workers = 1,
-    n_h1 = 5, n_h2 = 5,
-    h1 = seq(1e-3, .25, length.out = n_h1)*diff(range(data$sd, na.rm = TRUE)),
-    h2 = seq(1e-3, .25, length.out = n_h1)*diff(range(data$sd, na.rm = TRUE)),
+    n_h1 = 5, n_h2 = 5, rng = diff(range(data$sd, na.rm = TRUE)),
+    h1 = seq(1e-3, .25, length.out = n_h1)*rng,
+    h2 = seq(1e-3, .25, length.out = n_h1)*rng,
     formula = c(sd ~ mean + c),
     plot = TRUE
 ) {
 
+  if (anyNA(c(h1, h2))) browser()
   out <- tidyr::expand_grid(
     h1, h2, formula
   )

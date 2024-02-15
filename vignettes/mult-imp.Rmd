@@ -4,7 +4,7 @@ output: rmarkdown::html_vignette
 author: "Philip Berg"
 vignette: >
   %\VignetteIndexEntry{mult-imp}
-  %\VignetteEngine{rmarkdown::render}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
@@ -47,7 +47,7 @@ This can either be done `tmm` as introduced in @robinson2010scaling or with `psr
 To exemplify we use `psrn` and `tmm` as follows:
 ```{r, yeast_prnn}
 yeast_psrn <- psrn(yeast, 'identifier')
-yeast_tmm <- tmm(yeast)
+yeast_tmm  <- tmm(yeast)
 ```
 Both `psrn` and `tmm` first normalizes the data and then log$_{2}$ transforms it unless the flag `log=FALSE` is used.
 For the `ups` data we do the same thing:
@@ -82,26 +82,32 @@ From here on out, several functions in `mavis` will depend on a design matrix.
 A design matrix can be created as follows:
 ```{r, design}
 yeast_design <- model.matrix(
-  #Yeast has two conditions (1:2) and three replicates (each = 3)
+  # Yeast has two conditions (1:2) and three replicates (each = 3)
   ~0+factor(rep(1:2, each = 3))
 )
 ups_design <- model.matrix(
-  #ups has three conditions (1:3) and four replicates (each = 4)
+  # ups has three conditions (1:3) and four replicates (each = 4)
   ~0+factor(rep(1:3, each = 4))
 )
-#The design matrices has to have the same name as the conditions:
-colnames(yeast_design) <- paste0('ng', c(50, 100))
-colnames(ups_design) <- paste0('fmol', c(25, 50, 100))
+# The design matrices has to have the same name as the conditions:
+colnames(yeast_design) <- paste0('ng',   c(50, 100))
+colnames(ups_design)   <- paste0('fmol', c(25, 50, 100))
 ```
+Next, we will calculate the M-V trend and determine the integration windows for the trend partitioning.
+```{r, yeast_grid}
+yeast_grid <- yeast_psrn %>% 
+  calculate_mean_sd_trends(yeast_design) %>% 
+  grid_search(yeast_design, n_h1 = 20, n_h2 = 20, workers = round(parallel::detectCores()/2))
+yeast_grid
+# Select the best dataset
+yeast_psrn <- yeast_grid$clustered_data[[1]]
+```
+
 The gamma regression and mean-variance scatter plots can then be produced by `plot_gamma_regression`.
 `plot_gamma_regression` plots the trends used for precision weights (later fed to `limma`'s `lmFit` similar to `voom`; @law2014voom) on the left and gamma regression after trend partitioning on right.
 For `yeast`:
 ```{r, gam_yeast, fig.width=7, fig.fullwidth=TRUE}
-plot_gamma_regression(yeast_psrn, yeast_design, verbose = FALSE)
-```
-and for `ups`:
-```{r, gam_ups, fig.width=7, fig.fullwidth=TRUE}
-plot_gamma_regression(ups_psrn, ups_design, verbose = FALSE)
+plot_gamma_regression(yeast_psrn, yeast_design, formula = sd ~ mean + c)
 ```
 The two individual plots can be generated similarly by calling `plot_gamma` or `plot_gamma_partition`.
 If one wants to inspect the estimated models that can be done similarly with `fit_gamma_regression`.

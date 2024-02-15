@@ -3,7 +3,7 @@ title: "Multiple Imputation and limma"
 output: rmarkdown::html_vignette
 author: "Philip Berg"
 vignette: >
-  %\VignetteIndexEntry{mult-imp}
+  %\VignetteIndexEntry{Multiple Imputation and limma}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -95,8 +95,8 @@ colnames(ups_design)   <- paste0('fmol', c(25, 50, 100))
 ```
 Next, we will calculate the M-V trend and determine the integration windows for the trend partitioning.
 ```{r, yeast_grid, fig.width=7, fig.fullwidth=TRUE}
-yeast_grid <- yeast_psrn %>% 
-  calculate_mean_sd_trends(yeast_design) %>% 
+yeast_grid <- yeast_psrn %>%
+  calculate_mean_sd_trends(yeast_design) %>%
   grid_search(yeast_design, n_h1 = 20, n_h2 = 20, workers = round(parallel::detectCores()/2))
 yeast_grid
 # Select the best dataset
@@ -169,16 +169,16 @@ yeast_reduced_results <- extract_results(
 To perform a single imputation one can use the `single_imputation` function.
 First we fit the gamma regression to estimate the variance for the imputation model then we perform the imputation:
 ```{r, yeast_sing_imp}
-yeast_psrn <- yeast_psrn %>% 
+yeast_psrn <- yeast_psrn %>%
   # Add mean-variance trends
   calculate_mean_sd_trends(yeast_design)
 yeast_one_imputation <- single_imputation(yeast_psrn, yeast_design, sd_p ~ mean)
 ```
 Next, we fit the gamma regression for estimating the precision weights with `fit_gamma_weights`.
 ```{r, yeast_gam}
-yeast_gam_reg <- yeast_one_imputation %>% 
+yeast_gam_reg <- yeast_one_imputation %>%
   # Update mean-variance post imputation
-  calculate_mean_sd_trends(yeast_design) %>% 
+  calculate_mean_sd_trends(yeast_design) %>%
   # Fit the regression
   fit_gamma_regression(sd ~ mean)
 ```
@@ -186,9 +186,9 @@ We now run a single instance of `limma` with `run_limma`.
 ```{r, yeast_limma}
 yeast_one_imputation_results <- run_limma(
   yeast_one_imputation,
-  yeast_design, 
-  yeast_contrast, 
-  yeast_gam_reg, 
+  yeast_design,
+  yeast_contrast,
+  yeast_gam_reg,
   'identifier'
 )
 ```
@@ -196,8 +196,8 @@ One might want to perform some p-value correction on this data.
 This can be one with `R`'s function `p.adjust`.
 Further, since `run_limma` returns the data in tidy format and if there are several comparisons, `dplyr`'s `group_by` and `mutate` can perform p-value correction per comparison as follows:
 ```{r, yeast_adjust}
-yeast_one_imputation_results <- yeast_one_imputation_results %>% 
-  dplyr::group_by(comparison) %>% 
+yeast_one_imputation_results <- yeast_one_imputation_results %>%
+  dplyr::group_by(comparison) %>%
   dplyr::mutate(
     p_val = p.adjust(p_val, 'fdr')
   )
@@ -208,7 +208,7 @@ yeast_one_imputation_results <- yeast_one_imputation_results %>%
 The final decision for the analysis can be plotted with `plot_ma`.
 `plot_ma` returns a `ggplot` object so it can easily be ascetically adjusted using `ggplot` syntax.
 ```{r, yeast_mult_ma, fig.width=7, fig.height=7, fig.fullwidth=TRUE}
-plot_ma(yeast_reduced_results) + 
+plot_ma(yeast_reduced_results) +
   # Move legend to below the plot
   ggplot2::theme(
     legend.position = 'bottom'

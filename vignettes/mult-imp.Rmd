@@ -3,7 +3,7 @@ title: "Multiple Imputation and limma"
 output: rmarkdown::html_vignette
 author: "Philip Berg"
 vignette: >
-  %\VignetteIndexEntry{mult-imp}
+  %\VignetteIndexEntry{Multiple Imputation and limma}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

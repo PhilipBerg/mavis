@@ -3,7 +3,7 @@ title: "Baldur-Tutorial"
 output: rmarkdown::html_vignette
 author: "Philip Berg"
 vignette: >
-  %\VignetteIndexEntry{mult-imp}
+  %\VignetteIndexEntry{Baldur-Tutorial}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

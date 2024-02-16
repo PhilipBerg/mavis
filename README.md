@@ -7,7 +7,6 @@
 
 ## Installation
 You can install the development version of `mavis` as follows:
-
 ``` r
 require(devtools)
 devtools::install_github("PhilipBerg/mavis", build_vignettes = TRUE)
@@ -16,7 +15,6 @@ devtools::install_github("PhilipBerg/mavis", build_vignettes = TRUE)
 ## Example
 
 See the vignettes for examples:
-
 ``` r
 library(mavis)
 ## See vignets for examples

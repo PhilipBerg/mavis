@@ -9,10 +9,6 @@ on:
     types: [published]
   workflow_dispatch:
 
-name: executable Permissions
-        run: |
-          chmod +x configure
-
 name: pkgdown
 
 jobs:

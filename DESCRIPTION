@@ -1,5 +1,5 @@
 Package: mavis
-Title: Mean-Variance Modeling In Label-Free Quantitative Proteomics
+Title: An Ensemble of Methods for Mean-Variance Trend Modeling and Bayesian Decision in Comparative Proteomics
 Version: 0.0.0.9000
 Authors@R: 
     person("Philip", "Berg", , "pb1015@msstate.edu", role = c("aut", "cre"),
@@ -11,6 +11,7 @@ Description:
 			For imputation, Mavis produces a more robust estimator of the variance component of the missing data by using the M-V trend.
 			Then, for the statistical testing for mean differences, Mavis makes inferences on the individual data points using the M-V trend.
 			This, can either be used with the Baldur framework or the limma framework.
+			Finally, Mavis has a Bayesian p-value ensemble method that can combinde the decision of several methods into as single aggregated decision.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -19,28 +20,32 @@ Biarch: true
 Depends: 
     R (>= 3.4.0)
 Imports: 
+    baldur (>= 0.0.1),
+    cli (>= 3.6.2),
+    doParallel (>= 1.0.17),
     dplyr (>= 1.1.1),
+    forcats,
     ggplot2 (>= 3.4.2),
+    glue (>= 1.6.2),
     limma (>= 3.54.2),
     magrittr (>= 2.0.3),
+    methods,
     multidplyr (>= 0.1.3),
-    Rdpack (>= 2.4),
     purrr (>= 1.0.1),
+    ranger (>= 0.15.1),
+    Rcpp (>= 0.12.0),
+    RcppParallel (>= 5.0.1),
+    Rdpack (>= 2.4),
     rlang (>= 1.1.0),
+    rstan (>= 2.18.1),
+    rstantools (>= 2.4.0),
+    statmod (>= 1.5.0),
+    stats,
     stringr (>= 1.5.0),
     tibble (>= 3.2.1),
     tidyr (>= 1.3.0),
-    statmod (>= 1.5.0),
-    stats,
-    methods,
-    viridisLite (>= 0.4.2),
-    glue (>= 1.6.2),
-    ranger (>= 0.15.1),
-    baldur (>= 0.0.1),
-    doParallel (>= 1.0.17),
     tidyselect,
-    cli,
-    forcats
+    viridisLite (>= 0.4.2)
 RdMacros: Rdpack
 SystemRequirements: GNU make
 LazyData: true
@@ -51,3 +56,10 @@ Suggests:
 VignetteBuilder: knitr
 biocViews:
     limma
+LinkingTo: 
+    BH (>= 1.66.0),
+    Rcpp (>= 0.12.0),
+    RcppEigen (>= 0.3.3.3.0),
+    RcppParallel (>= 5.0.1),
+    rstan (>= 2.18.1),
+    StanHeaders (>= 2.18.0)

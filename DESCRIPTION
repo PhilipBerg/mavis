@@ -46,6 +46,7 @@ Imports:
     tibble (>= 3.2.1),
     tidyr (>= 1.3.0),
     tidyselect,
+    utils,
     viridisLite (>= 0.4.2)
 RdMacros: Rdpack
 SystemRequirements: GNU make

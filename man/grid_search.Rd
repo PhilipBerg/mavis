@@ -49,7 +49,9 @@ design <- model.matrix(~ 0 + factor(rep(1:2, each = 3)))
 colnames(design) <- paste0("ng", c(50, 100))
 
 yeast_norm <- yeast \%>\%
-  psrn("identifier")
+  psrn("identifier") \%>\%
+  # Take half the data to reduce running time
+  dplyr::sample_frac(.5)
 yeast_norm \%>\%
   calculate_mean_sd_trends(design) \%>\%
   grid_search(design, n_h1 = 2, n_h2 = 2)

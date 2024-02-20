@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main, master]
 
+name: executable Permissions
+        run: |
+          chmod +x configure
+
 name: R-CMD-check
 
 jobs:

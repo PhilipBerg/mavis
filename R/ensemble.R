@@ -11,7 +11,7 @@ NULL
 #' @importFrom R6 R6Class
 #' @importFrom utils find
 #'
-#' @return An ensemble object see []
+#' @return An ensemble object see [ensemble] for details.
 #'
 #' @examples
 #' # Setup variables

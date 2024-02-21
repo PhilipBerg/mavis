@@ -144,7 +144,9 @@ ensemble <- R6::R6Class("Ensemble_Stack",
 
 #' Start a New Bayesian Ensemble
 #'
+#' @description
 #' Creates a new ensemble instance.
+#'
 #' @name start_ensemble
 #'
 #' @return An ensemble object; see [ensemble] for details.

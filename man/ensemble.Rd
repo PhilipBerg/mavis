@@ -3,18 +3,9 @@
 \docType{class}
 \name{ensemble}
 \alias{ensemble}
-\alias{start_ensemble}
-\title{Bayesian Ensemble}
-\usage{
-start_ensemble()
-}
-\value{
-An ensemble object see []
-}
+\title{An R6 class for Bayesian Ensemble}
 \description{
-Bayesian Ensemble
-
-Start a New Bayesian Ensemble
+An \link[R6:R6Class]{R6::R6Class} to interface with the Bayesian ensemble.
 }
 \examples{
 # Setup variables
@@ -58,4 +49,156 @@ new_ensemble$add(limma_gr, "GR-limma", "identifier", "p_val", "lfc", do_rm = TRU
    limma_trend, "limma-trend", "identifier", "p_val", "lfc", do_rm = TRUE
 )
 ensemble_results <- new_ensemble$run_ensemble(iter = 150)
+limma_gr <- new_ensemble$pop("limma_gr")
+}
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{stack}}{A data stack for the methods to have available for the use in
+the ensemble.}
+}
+\if{html}{\out{</div>}}
+}
+\section{Methods}{
+\subsection{Public methods}{
+\itemize{
+\item \href{#method-Ensemble_Stack-add}{\code{ensemble$add()}}
+\item \href{#method-Ensemble_Stack-pop}{\code{ensemble$pop()}}
+\item \href{#method-Ensemble_Stack-run_ensemble}{\code{ensemble$run_ensemble()}}
+\item \href{#method-Ensemble_Stack-print}{\code{ensemble$print()}}
+\item \href{#method-Ensemble_Stack-clone}{\code{ensemble$clone()}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Ensemble_Stack-add"></a>}}
+\if{latex}{\out{\hypertarget{method-Ensemble_Stack-add}{}}}
+\subsection{Method \code{add()}}{
+Add a new method to the stack
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ensemble$add(
+  data,
+  method,
+  id_col,
+  p_col,
+  lfc_col,
+  comp_col = "comparison",
+  auxilary = "rest",
+  do_rm = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{Input data with the results from a
+method.}
+
+\item{\code{method}}{The name to use to refer to the
+method in the stack.}
+
+\item{\code{id_col, p_col, lfc_col, comp_col}}{Name of the
+columns containing the unique identifier for
+each peptide, the p-values, log-fold change, and
+contast/comparison of the method, respectively.}
+
+\item{\code{auxilary}}{Additional paramters to store in
+the stack. Can be useful if \code{do_rm} is \code{TRUE}.
+Defaults to "rest" meaning the rest of the
+columns (other than the forementioned).}
+
+\item{\code{do_rm}}{Should the variable be removed from
+its current environment? Can be useful to reduce
+memory usage and avoid the need to rm after each
+method is added to the stack. Defaults to
+\code{FALSE}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Ensemble_Stack-pop"></a>}}
+\if{latex}{\out{\hypertarget{method-Ensemble_Stack-pop}{}}}
+\subsection{Method \code{pop()}}{
+Remove a method from the stack and return it to stdout
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ensemble$pop(method = length(self$stack))}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{method}}{method index (integer) or name to return
+defaults to the most recently added method.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Ensemble_Stack-run_ensemble"></a>}}
+\if{latex}{\out{\hypertarget{method-Ensemble_Stack-run_ensemble}{}}}
+\subsection{Method \code{run_ensemble()}}{
+Run the ensemble
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ensemble$run_ensemble(
+  methods = "all",
+  parallel_chains = 1,
+  parallel_runs = 1,
+  ...
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{methods}}{Which methods to include in the
+ensemble.}
+
+\item{\code{parallel_chains}}{Number of parallel workers
+to use when running the sampling.}
+
+\item{\code{parallel_runs}}{The number of parallel
+comparison to run at the same time. Note that
+the total number of parallel instances will be
+\code{parallel_chains}\eqn{\times}\code{parallel_runs}.
+Can be efficient when there are many comparisons
+to run.}
+
+\item{\code{...}}{Additional parameters to
+\link[rstan:stanmodel-method-sampling]{rstan::sampling}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \link[tibble:tibble]{tibble::tibble} with the ensembled
+p-value. Column names will default to the first
+method in the stack.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Ensemble_Stack-print"></a>}}
+\if{latex}{\out{\hypertarget{method-Ensemble_Stack-print}{}}}
+\subsection{Method \code{print()}}{
+Printing method for the class.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ensemble$print()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Ensemble_Stack-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-Ensemble_Stack-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ensemble$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
 }

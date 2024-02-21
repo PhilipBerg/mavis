@@ -1,17 +1,155 @@
-#' Bayesian Ensemble
+#' @title An R6 class for Bayesian Ensemble
 #'
+#' @description
+#' An [R6::R6Class] to interface with the Bayesian ensemble.
+#'
+#' @importFrom R6 R6Class
+#' @importFrom utils find
 #' @docType class
-#' @name ensemble
 #'
-NULL
+#' @field stack A data stack for the methods to have available for the use in
+#'    the ensemble.
+#' @name ensemble
+#' @inherit start_ensemble examples
+ensemble <- R6::R6Class("Ensemble_Stack",
+                        list(
+                          stack = list(),
+                          #' @param data Input data with the results from a
+                          #'    method.
+                          #' @param method The name to use to refer to the
+                          #'    method in the stack.
+                          #' @param id_col,p_col,lfc_col,comp_col  Name of the
+                          #'    columns containing the unique identifier for
+                          #'    each peptide, the p-values, log-fold change, and
+                          #'    contast/comparison of the method, respectively.
+                          #' @param auxilary Additional paramters to store in
+                          #'    the stack. Can be useful if `do_rm` is `TRUE`.
+                          #'    Defaults to "rest" meaning the rest of the
+                          #'    columns (other than the forementioned).
+                          #' @param do_rm Should the variable be removed from
+                          #'    its current environment? Can be useful to reduce
+                          #'    memory usage and avoid the need to rm after each
+                          #'    method is added to the stack. Defaults to
+                          #'    `FALSE`.
+                          #'
+                          #' @description
+                          #' Add a new method to the stack
+                          add   = function(data, method, id_col, p_col, lfc_col, comp_col = "comparison", auxilary = "rest", do_rm = FALSE) {
+                            dq <- substitute(data)
+                            self$stack[[method]]$id_col   <- id_col
+                            self$stack[[method]]$p_col    <- p_col
+                            self$stack[[method]]$lfc_col  <- lfc_col
+                            self$stack[[method]]$comp_col <- comp_col
+                            if (auxilary == "rest") {
+                              self$stack[[method]]$data <- data
+                            } else if (auxilary == "none") {
+                              self$stack[[method]]$data <- data[c(id_col, p_col, lfc_col, comp_col)]
+                            } else {
+                              self$stack[[method]]$data <- data[c(id_col, p_col, lfc_col, comp_col, auxilary)]
+                            }
+                            if (do_rm) {
+                              ev  <- get(find(as.character(dq)))
+                              do.call("rm", list(dq, envir = ev))
+                            }
+                            invisible(self)
+                          },
+                          #' @description
+                          #' Remove a method from the stack and return it to stdout
+                          #'
+                          #' @param method method index (integer) or name to return
+                          #' defaults to the most recently added method.
+                          pop  = function(method = length(self$stack)) {
+                            out <- self$stack[[method]]$data
+                            self$stack[[method]] <- NULL
+                            out
+                          },
+                          #' @description
+                          #' Run the ensemble
+                          #'
+                          #' @param methods Which methods to include in the
+                          #'    ensemble.
+                          #' @param parallel_chains Number of parallel workers
+                          #'    to use when running the sampling.
+                          #' @param parallel_runs The number of parallel
+                          #'    comparison to run at the same time. Note that
+                          #'    the total number of parallel instances will be
+                          #'    `parallel_chains`\eqn{\times}`parallel_runs`.
+                          #'    Can be efficient when there are many comparisons
+                          #'    to run.
+                          #' @param ... Additional parameters to
+                          #'    [rstan::sampling].
+                          #'
+                          #' @return A [tibble::tibble] with the ensembled
+                          #'    p-value. Column names will default to the first
+                          #'    method in the stack.
+                          run_ensemble = function(methods = "all", parallel_chains = 1, parallel_runs = 1, ...) {
+                            if (methods == "all") methods <- names(self$stack)
+                            col_names <- self$stack[methods][[1]][1:4]
+                            stn_data <- private$make_stan_inputs(methods)
+                            id_order <- private$standardize_data(methods, simplify = TRUE)$id
+                            stan_mod <- stanmodels$mavis
+
+                            stn_inputs <- rlang::dots_list(...)
+                            stn_call <- rlang::expr(
+                              ~ rstan::sampling(
+                                object = stan_mod,
+                                cores = parallel_chains,
+                                data = .x,
+                                !!!stn_inputs
+                              )
+                            )
+                            if (parallel_runs == 1) {
+                              samp <- purrr::map(stn_data,
+                                                 rlang::eval_tidy(stn_call)
+                              )
+                            } else {
+                              cl <- multidplyr::new_cluster(parallel_runs)
+                              suppressWarnings(invisible((
+                                purrr::quietly(multidplyr::cluster_library))(cl,
+                                                                             c(
+                                                                               "dplyr", "tidyr", "purrr", "tibble", "stringr",
+                                                                               "magrittr", "rstan", "StanHeaders", "rlang"
+                                                                             )
+                                ))
+                              )
+                              multidplyr::cluster_copy(cl, "stn_call")
+                              multidplyr::cluster_copy(cl, "stan_mod")
+                              samp <- tibble::enframe(stn_data) %>%
+                                multidplyr::partition(cl) %>%
+                                dplyr::mutate(
+                                  samp = purrr::map(value, rlang::eval_tidy(stn_call))
+                                ) %>%
+                                dplyr::collect()
+                            }
+                            samp %>%
+                              private$stan_to_output() %>%
+                              dplyr::mutate(
+                                !!col_names$id_col := id_order,
+                                mean = 1 - mean
+                              ) %>%
+                              dplyr::select(all_of(col_names$id_col), !!col_names$comp_col := name, p_val = mean, everything())
+                          },
+                          #' @description
+                          #' Printing method for the class.
+                          print = function() {
+                            n <- length(self$stack)
+                            top <- cli::cli_text("Ensemble Stack of {n}")
+                            if(n > 0) {
+                              cli::cli_text("Methods Available: {paste0(names(self$stack), collapse = ', ')}")
+                            }
+                            invisible(self)
+                          }
+                        )
+)
 
 #' Start a New Bayesian Ensemble
 #'
-#' @name start_ensemble
-#' @importFrom R6 R6Class
-#' @importFrom utils find
+#' @description
+#' Creates a new ensemble instance.
 #'
-#' @return An ensemble object see [ensemble] for details.
+#' @name start_ensemble
+#'
+#' @return An ensemble object; see [ensemble] for details.
 #'
 #' @examples
 #' # Setup variables
@@ -56,108 +194,15 @@ NULL
 #'    limma_trend, "limma-trend", "identifier", "p_val", "lfc", do_rm = TRUE
 #' )
 #' ensemble_results <- new_ensemble$run_ensemble(iter = 150)
+#' limma_gr <- new_ensemble$pop("limma_gr")
 #' @export
 start_ensemble <- function() {
   ensemble$new()
 }
 
-ensemble <- R6::R6Class("Ensemble_Stack",
-                        list(
-                          stack = list(),
-                          print = function() {
-                            n <- length(self$stack)
-                            top <- cli::cli_text("Ensemble Stack of {n}")
-                            if(n > 0) {
-                              cli::cli_text("Methods Available: {paste0(names(self$stack), collapse = ', ')}")
-                            }
-                            invisible(self)
-                          }
-                        ),
-                        list(
-                          std_data = tibble::tibble()
-                        )
-)
-
 ensemble$set(
-  "public", "add",
-  function(data, method, id_col, p_col, lfc_col, comp_col = "comparison", auxilary = "rest", do_rm = FALSE) {
-    dq <- substitute(data)
-    self$stack[[method]]$id_col   <- id_col
-    self$stack[[method]]$p_col    <- p_col
-    self$stack[[method]]$lfc_col  <- lfc_col
-    self$stack[[method]]$comp_col <- comp_col
-    if (auxilary == "rest") {
-      self$stack[[method]]$data <- data
-    } else if (auxilary == "none") {
-      self$stack[[method]]$data <- data[c(id_col, p_col, lfc_col, comp_col)]
-    } else {
-      self$stack[[method]]$data <- data[c(id_col, p_col, lfc_col, comp_col, auxilary)]
-    }
-    if (do_rm) {
-      ev  <- get(find(as.character(dq)))
-      do.call("rm", list(dq, envir = ev))
-    }
-    invisible(self)
-  }
-)
-
-ensemble$set(
-  "public", "pop",
-  function(method = 1) {
-    out <- self$stack[[method]]$data
-    self$stack[[method]] <- NULL
-    out
-  }
-)
-ensemble$set(
-  "public", "run_ensemble",
-  function(methods = "all", parallel_chains = 1, parallel_runs = 1, ...) {
-    if (methods == "all") methods <- names(self$stack)
-    col_names <- self$stack[methods][[1]][1:4]
-    stn_data <- private$make_stan_inputs(methods)
-    id_order <- private$standardize_data(methods, simplify = TRUE)$id
-    stan_mod <- stanmodels$mavis
-
-    stn_inputs <- rlang::dots_list(...)
-    stn_call <- rlang::expr(
-      ~ rstan::sampling(
-        object = stan_mod,
-        cores = parallel_chains,
-        data = .x,
-        !!!stn_inputs
-      )
-    )
-    if (parallel_runs == 1) {
-      samp <- purrr::map(stn_data,
-                         rlang::eval_tidy(stn_call)
-      )
-    } else {
-      cl <- multidplyr::new_cluster(parallel_runs)
-      suppressWarnings(invisible((
-        purrr::quietly(multidplyr::cluster_library))(cl,
-                                                     c(
-                                                       "dplyr", "tidyr", "purrr", "tibble", "stringr",
-                                                       "magrittr", "rstan", "StanHeaders", "rlang"
-                                                     )
-        ))
-      )
-      multidplyr::cluster_copy(cl, "stn_call")
-      multidplyr::cluster_copy(cl, "stan_mod")
-      samp <- tibble::enframe(stn_data) %>%
-        multidplyr::partition(cl) %>%
-        dplyr::mutate(
-          samp = purrr::map(value, rlang::eval_tidy(stn_call))
-        ) %>%
-        dplyr::collect()
-    }
-    samp %>%
-      private$stan_to_output() %>%
-      dplyr::mutate(
-        !!col_names$id_col := id_order,
-        mean = 1 - mean
-      ) %>%
-      dplyr::select(all_of(col_names$id_col), !!col_names$comp_col := name, p_val = mean, everything())
-  }
+  "private", "std_data",
+  tibble::tibble()
 )
 
 ensemble$set(
@@ -213,6 +258,7 @@ ensemble$set(
       purrr::map2(weights, private$add_weights)
   }
 )
+
 ensemble$set(
   "private", "make_stan_input", function(decision) {
     N <- nrow(decision)
@@ -232,6 +278,7 @@ ensemble$set(
     )
   }
 )
+
 ensemble$set(
   "private", "make_weights", function(std_data) {
     weights <- std_data %>%

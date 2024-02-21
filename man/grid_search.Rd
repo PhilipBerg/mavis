@@ -50,8 +50,8 @@ colnames(design) <- paste0("ng", c(50, 100))
 
 yeast_norm <- yeast \%>\%
   psrn("identifier") \%>\%
-  # Take half the data to reduce running time
-  dplyr::sample_frac(.5)
+  # Take ~half the data to reduce running time of example
+  dplyr::sample_frac(.4)
 yeast_norm \%>\%
   calculate_mean_sd_trends(design) \%>\%
   grid_search(design, n_h1 = 2, n_h2 = 2)

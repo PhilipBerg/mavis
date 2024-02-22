@@ -89,10 +89,6 @@ multiple_imputation_and_limma <- function(data,
     data <- data %>%
       multi_trend_partitioning(design, formula_weights, ...)
   }
-  # gamma_reg_imp <- fit_gamma_regression(data, formula_imputation)
-  # if(formula_imputation == formula_weights & weights){
-  #   gamma_reg_weights <- gamma_reg_imp
-  # } else
   if (weights) {
     gamma_reg_weights <- fit_gamma_regression(data, formula_weights)
   } else{

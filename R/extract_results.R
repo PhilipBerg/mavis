@@ -64,7 +64,7 @@ utils::globalVariables(
 extract_results <- function(results,
                             data,
                             alpha = 0.05,
-                            abs_lfc = 1,
+                            abs_lfc = 0,
                             pcor = stats::p.adjust.methods,
                             id_col = "id",
                             null_hyp = 0.5) {

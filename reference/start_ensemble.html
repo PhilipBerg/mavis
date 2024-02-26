@@ -35,6 +35,9 @@
       <a href="../articles/baldur-tutorial.html">Baldur-Tutorial</a>
     </li>
     <li>
+      <a href="../articles/ensemble.html">Ensemble Tutorial</a>
+    </li>
+    <li>
       <a href="../articles/mult-imp.html">Multiple Imputation and limma</a>
     </li>
   </ul></li>
@@ -109,17 +112,152 @@
 <span class="r-in"><span><span class="op">)</span><span class="op">$</span><span class="fu">add</span><span class="op">(</span></span></span>
 <span class="r-in"><span>   <span class="va">limma_trend</span>, <span class="st">"limma-trend"</span>, <span class="st">"identifier"</span>, <span class="st">"p_val"</span>, <span class="st">"lfc"</span>, do_rm <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in get(find(as.character(dq))):</span> invalid first argument</span>
 <span class="r-in"><span><span class="va">ensemble_results</span> <span class="op">&lt;-</span> <span class="va">new_ensemble</span><span class="op">$</span><span class="fu">run_ensemble</span><span class="op">(</span>iter <span class="op">=</span> <span class="fl">150</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Error : Exception: mismatch in number dimensions declared and found in context; processing stage=data initialization; variable name=tau; dims declared=(1); dims found=() (in 'mavis', line 5, column 2 to column 36)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> failed to create the sampler; sampling not done</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Stan model 'mavis' does not contain samples.</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in dplyr::mutate(., samp = purrr::map(samp, ~.x %&gt;% rstan::summary(pars = "mu") %&gt;%     magrittr::use_series(summary) %&gt;% tibble::as_tibble(rownames = "par") %&gt;%     dplyr::select(mean, n_eff, Rhat))):</span> <span style="color: #00BBBB;">ℹ</span> In argument: `samp = purrr::map(...)`.</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Caused by error in `purrr::map()`:</span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> In index: 1.</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Caused by error in `dplyr::select()`:</span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Can't subset columns that don't exist.</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="color: #BB0000;">✖</span> Column `mean` doesn't exist.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'mavis' NOW (CHAIN 1).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Gradient evaluation took 2e-05 seconds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.2 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Adjust your expectations accordingly!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: WARNING: There aren't enough warmup iterations to fit the</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:          three stages of adaptation as currently configured.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:          Reducing each adaptation stage to 15%/75%/10% of</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:          the given number of warmup iterations:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:            init_buffer = 11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:            adapt_window = 57</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:            term_buffer = 7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration:   1 / 150 [  0%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration:  15 / 150 [ 10%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration:  30 / 150 [ 20%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration:  45 / 150 [ 30%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration:  60 / 150 [ 40%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration:  75 / 150 [ 50%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration:  76 / 150 [ 50%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration:  90 / 150 [ 60%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 105 / 150 [ 70%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 120 / 150 [ 80%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 135 / 150 [ 90%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 150 / 150 [100%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:  Elapsed Time: 0.125 seconds (Warm-up)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.16 seconds (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.285 seconds (Total)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'mavis' NOW (CHAIN 2).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Gradient evaluation took 1.5e-05 seconds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.15 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Adjust your expectations accordingly!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: WARNING: There aren't enough warmup iterations to fit the</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:          three stages of adaptation as currently configured.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:          Reducing each adaptation stage to 15%/75%/10% of</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:          the given number of warmup iterations:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:            init_buffer = 11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:            adapt_window = 57</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:            term_buffer = 7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration:   1 / 150 [  0%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration:  15 / 150 [ 10%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration:  30 / 150 [ 20%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration:  45 / 150 [ 30%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration:  60 / 150 [ 40%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration:  75 / 150 [ 50%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration:  76 / 150 [ 50%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration:  90 / 150 [ 60%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 105 / 150 [ 70%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 120 / 150 [ 80%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 135 / 150 [ 90%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 150 / 150 [100%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:  Elapsed Time: 0.145 seconds (Warm-up)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                0.158 seconds (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                0.303 seconds (Total)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'mavis' NOW (CHAIN 3).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: Gradient evaluation took 1.5e-05 seconds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.15 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: Adjust your expectations accordingly!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: WARNING: There aren't enough warmup iterations to fit the</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3:          three stages of adaptation as currently configured.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3:          Reducing each adaptation stage to 15%/75%/10% of</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3:          the given number of warmup iterations:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3:            init_buffer = 11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3:            adapt_window = 57</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3:            term_buffer = 7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: Iteration:   1 / 150 [  0%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: Iteration:  15 / 150 [ 10%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: Iteration:  30 / 150 [ 20%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: Iteration:  45 / 150 [ 30%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: Iteration:  60 / 150 [ 40%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: Iteration:  75 / 150 [ 50%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: Iteration:  76 / 150 [ 50%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: Iteration:  90 / 150 [ 60%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: Iteration: 105 / 150 [ 70%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: Iteration: 120 / 150 [ 80%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: Iteration: 135 / 150 [ 90%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: Iteration: 150 / 150 [100%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3:  Elapsed Time: 0.181 seconds (Warm-up)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3:                0.128 seconds (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3:                0.309 seconds (Total)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 3: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'mavis' NOW (CHAIN 4).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: Gradient evaluation took 1.5e-05 seconds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.15 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: Adjust your expectations accordingly!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: WARNING: There aren't enough warmup iterations to fit the</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4:          three stages of adaptation as currently configured.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4:          Reducing each adaptation stage to 15%/75%/10% of</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4:          the given number of warmup iterations:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4:            init_buffer = 11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4:            adapt_window = 57</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4:            term_buffer = 7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: Iteration:   1 / 150 [  0%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: Iteration:  15 / 150 [ 10%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: Iteration:  30 / 150 [ 20%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: Iteration:  45 / 150 [ 30%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: Iteration:  60 / 150 [ 40%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: Iteration:  75 / 150 [ 50%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: Iteration:  76 / 150 [ 50%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: Iteration:  90 / 150 [ 60%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: Iteration: 105 / 150 [ 70%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: Iteration: 120 / 150 [ 80%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: Iteration: 135 / 150 [ 90%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: Iteration: 150 / 150 [100%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4:  Elapsed Time: 0.152 seconds (Warm-up)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4:                0.145 seconds (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4:                0.297 seconds (Total)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 4: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 21 divergent transitions after warmup. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> to find out why this is a problem and how to eliminate them.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Examine the pairs() plot to diagnose sampling problems</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The largest R-hat is 1.14, indicating chains have not mixed.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> Running the chains for more iterations may help. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#r-hat</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> Running the chains for more iterations may help. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#bulk-ess</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> Running the chains for more iterations may help. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#tail-ess</span>
 <span class="r-in"><span><span class="va">limma_gr</span> <span class="op">&lt;-</span> <span class="va">new_ensemble</span><span class="op">$</span><span class="fu">pop</span><span class="op">(</span><span class="st">"limma_gr"</span><span class="op">)</span></span></span>
 </code></pre></div>
     </div>

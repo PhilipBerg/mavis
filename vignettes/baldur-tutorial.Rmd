@@ -51,37 +51,37 @@ Next we perform imputation:
 yeast_imp <- yeast %>%
   single_imputation(yeast_design)
 #> Estimating Imputation Paramters
-#> Previous error: Inf 	>	Current error: 5.918522 
+#> Previous error: Inf 	>	Current error: 5.793245 
 #> Iteration time:
-#>  6.063852 secs 
+#>  5.999608 secs 
 #> 
-#> Previous error: 5.918522 	>	Current error: 0.1268151 
+#> Previous error: 5.793245 	>	Current error: 0.1237535 
 #> Iteration time:
-#>  5.314738 secs 
+#>  6.101243 secs 
 #> 
-#> Previous error: 0.1268151 	>	Current error: 0.06087916 
+#> Previous error: 0.1237535 	>	Current error: 0.05545268 
 #> Iteration time:
-#>  5.103424 secs 
+#>  6.100341 secs 
 #> 
-#> Previous error: 0.06087916 	>	Current error: 0.03199564 
+#> Previous error: 0.05545268 	>	Current error: 0.02644271 
 #> Iteration time:
-#>  5.330427 secs 
+#>  6.11713 secs 
 #> 
-#> Previous error: 0.03199564 	>	Current error: 0.0150328 
+#> Previous error: 0.02644271 	>	Current error: 0.0167691 
 #> Iteration time:
-#>  6.762667 secs 
+#>  6.096946 secs 
 #> 
-#> Previous error: 0.0150328 	>	Current error: 0.01131249 
+#> Previous error: 0.0167691 	>	Current error: 0.008999636 
 #> Iteration time:
-#>  7.034297 secs 
+#>  6.102479 secs 
 #> 
-#> Previous error: 0.01131249 	>	Current error: 0.008185775 
+#> Previous error: 0.008999636 	>	Current error: 0.007909314 
 #> Iteration time:
-#>  7.211469 secs 
+#>  6.101781 secs 
 #> 
-#> Previous error: 0.008185775 	<	Current error: 0.009011511 	Breaking 
+#> Previous error: 0.007909314 	<	Current error: 0.008314841 	Breaking 
 #> Iteration time:
-#>  7.180205 secs
+#>  6.111201 secs
 ```
 After imputation we re-estimate the mean-variance trends and partition the data:
 
@@ -98,16 +98,16 @@ yeast_grid
 #> # A tibble: 400 × 5
 #>         h1      h2 formula       s clustered_data       
 #>      <dbl>   <dbl> <list>    <dbl> <list>               
-#>  1 0.0875  0.250   <formula>  280. <tibble [2,235 × 11]>
-#>  2 0.0875  0.331   <formula>  262. <tibble [2,235 × 11]>
-#>  3 0.0875  0.169   <formula>  252. <tibble [2,235 × 11]>
-#>  4 0.00620 0.331   <formula>  220. <tibble [2,235 × 11]>
-#>  5 0.169   0.331   <formula>  215. <tibble [2,235 × 11]>
-#>  6 0.0875  0.413   <formula>  211. <tibble [2,235 × 11]>
-#>  7 0.00620 0.250   <formula>  208. <tibble [2,235 × 11]>
-#>  8 0.00620 0.413   <formula>  198. <tibble [2,235 × 11]>
-#>  9 0.00620 0.00620 <formula>  188. <tibble [2,235 × 11]>
-#> 10 0.00620 0.0875  <formula>  188. <tibble [2,235 × 11]>
+#>  1 0.0875  0.250   <formula>  285. <tibble [2,235 × 11]>
+#>  2 0.0875  0.331   <formula>  266. <tibble [2,235 × 11]>
+#>  3 0.0875  0.413   <formula>  249. <tibble [2,235 × 11]>
+#>  4 0.00620 0.331   <formula>  221. <tibble [2,235 × 11]>
+#>  5 0.169   0.331   <formula>  208. <tibble [2,235 × 11]>
+#>  6 0.00620 0.250   <formula>  203. <tibble [2,235 × 11]>
+#>  7 0.00620 0.413   <formula>  193. <tibble [2,235 × 11]>
+#>  8 0.00620 0.00620 <formula>  190. <tibble [2,235 × 11]>
+#>  9 0.00620 0.0875  <formula>  190. <tibble [2,235 × 11]>
+#> 10 0.00620 0.169   <formula>  189. <tibble [2,235 × 11]>
 #> # ℹ 390 more rows
 # Select the dataset with the largest score
 yeast_cluster <- yeast_grid$clustered_data[[1]]
@@ -145,15 +145,14 @@ yeast_results <- gam_clust_reg %>%
 yeast_results %>%
   dplyr::arrange(err)
 #> # A tibble: 6 × 22
-#>   identifier  comparison    err     lfc lfc_025   lfc_50 lfc_975 lfc_eff lfc_rhat sigma sigma_025 sigma_50 sigma_975 sigma_eff sigma_rhat     lp
-#>   <chr>       <chr>       <dbl>   <dbl>   <dbl>    <dbl>   <dbl>   <dbl>    <dbl> <dbl>     <dbl>    <dbl>     <dbl>     <dbl>      <dbl>  <dbl>
-#> 1 Cre01.g004… ng100 vs … 0.0894 -0.278   -0.606 -0.276    0.0354   6657.    1.00  0.163    0.118     0.160     0.223     4610.      0.999  -4.88
-#> 2 Cre01.g000… ng100 vs … 0.0999 -0.241   -0.535 -0.243    0.0457   5192.    1.00  0.140    0.0898    0.136     0.217     2690.      1.00    3.66
-#> 3 Cre01.g004… ng100 vs … 0.296  -0.264   -0.772 -0.261    0.251    5814.    0.999 0.245    0.192     0.242     0.313     4419.      1.00  -16.9 
-#> 4 Cre01.g002… ng100 vs … 0.414   0.287   -0.415  0.288    0.984    5219.    1.00  0.341    0.270     0.336     0.432     5241.      1.00  -23.6 
-#> 5 Cre01.g002… ng100 vs … 0.759   0.153   -0.835  0.156    1.13     5902.    1.00  0.471    0.365     0.466     0.606     4350.      1.00  -21.8 
-#> 6 Cre01.g004… ng100 vs … 0.982   0.0110  -0.946  0.00221  0.998    5928.    1.00  0.492    0.388     0.487     0.626     5237.      1.00  -24.3 
-#> # ℹ 6 more variables: lp_025 <dbl>, lp_50 <dbl>, lp_975 <dbl>, lp_eff <dbl>, lp_rhat <dbl>, warnings <list>
+#>   identifier                              comparison       err     lfc lfc_025   lfc_50 lfc_975 lfc_eff lfc_rhat sigma sigma_025 sigma_50 sigma_975 sigma_eff sigma_rhat     lp lp_025  lp_50 lp_975 lp_eff lp_rhat warnings 
+#>   <chr>                                   <chr>          <dbl>   <dbl>   <dbl>    <dbl>   <dbl>   <dbl>    <dbl> <dbl>     <dbl>    <dbl>     <dbl>     <dbl>      <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>   <dbl> <list>   
+#> 1 Cre01.g004500.t1.2|PACid:30789545|--355 ng100 vs ng50 0.0874 -0.275   -0.603 -0.268    0.0391   4547.    1.00  0.162    0.119     0.160     0.221     4159.      1.00   -5.07 -10.2   -4.72  -1.88  1696.    1.00 <chr [0]>
+#> 2 Cre01.g000800.t1.2|PACid:30788536|--66  ng100 vs ng50 0.0995 -0.239   -0.518 -0.239    0.0551   4692.    1.00  0.141    0.0911    0.137     0.218     2184.      1.00    3.43  -2.22   3.79   6.94  1253.    1.00 <chr [0]>
+#> 3 Cre01.g004500.t1.2|PACid:30789545|--444 ng100 vs ng50 0.288  -0.266   -0.762 -0.268    0.220    6253.    1.00  0.245    0.190     0.242     0.311     4675.      1.00  -17.1  -22.2  -16.8  -14.1   1759.    1.00 <chr [0]>
+#> 4 Cre01.g002300.t1.2|PACid:30788660|--40  ng100 vs ng50 0.384   0.298   -0.375  0.298    0.965    6522.    0.999 0.338    0.269     0.335     0.423     5665.      1.00  -23.6  -28.1  -23.3  -20.7   1755.    1.00 <chr [0]>
+#> 5 Cre01.g002300.t1.2|PACid:30788660|--168 ng100 vs ng50 0.725   0.172   -0.768  0.176    1.11     5264.    1.00  0.467    0.362     0.462     0.600     4568.      0.999 -21.6  -26.9  -21.2  -18.5   1730.    1.00 <chr [0]>
+#> 6 Cre01.g004350.t1.2|PACid:30788641|--148 ng100 vs ng50 0.971   0.0186  -1.02   0.00632  1.03     5424.    1.00  0.493    0.387     0.488     0.627     4035.      1.00  -24.3  -29.2  -23.9  -21.2   1701.    1.00 <chr [0]>
 ```
 Here `err` is the probability of error, i.e., the tail-density supporting the null-hypothesis, `lfc` is the estimated log$_2$-fold change, and `sigma` is the common variance.
 Columns without suffix shows the mean estimate from the posterior, while the suffixes `_025`, `_975`, and `_med` are the 2.5, 97.5, and 50.0 percentiles, respectively.

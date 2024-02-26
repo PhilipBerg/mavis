@@ -11,7 +11,8 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.path = "./vignettes/"
 )
 ```
 # 1. Setup
@@ -51,7 +52,7 @@ yeast_imp <- yeast %>%
   single_imputation(yeast_design)
 ```
 After imputation we re-estimate the mean-variance trends and partition the data:
-```{r, reeset}
+```{r, reeset, fig.width=7, fig.fullwidth=TRUE}
 yeast_grid <- yeast_imp %>%
   calculate_mean_sd_trends(yeast_design) %>%
   grid_search(yeast_design, n_h1 = 20, n_h2 = 20, workers = round(parallel::detectCores()/2))

@@ -1,0 +1,205 @@
+---
+title: "Ensemble Tutorial"
+output: rmarkdown::html_vignette
+author: "Philip Berg"
+vignette: >
+  %\VignetteIndexEntry{Ensemble Tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "./vignettes/"
+)
+```
+
+Here we will exemplify how to run the ensemble method using the UPS-DS.
+```{r setup}
+# Load Mavis
+library(mavis)
+
+# Setup helper function to run Baldur
+baldur_wrapper <- function(data, design, contrast, gam_model, mean_prior = empirical_bayes, workers) {
+  uncertainty <- data %>%
+    mavis::estimate_uncertainty('identifier', design, gam_model)
+  gam_model %>%
+    mavis::estimate_gamma_hyperparameters(data, design) %>%
+    baldur::infer_data_and_decision_model(
+      id_col = 'identifier',
+      design_matrix = design,
+      contrast_matrix = contrast,
+      uncertainty_matrix = uncertainty,
+      stan_model = mean_prior,
+      clusters = workers
+    )
+}
+
+# Setup input variables
+workers <- round(parallel::detectCores()/2)
+ups_design <- model.matrix(~ 0 + factor(rep(1:3, each = 4)))
+colnames(ups_design) <- paste0("fmol", c(25, 50, 100))
+ups_cont <- combn(colnames(ups_design), 2, FUN = \(x) paste0(x, collapse = "-")) %>%
+  limma::makeContrasts(contrasts = ., levels = ups_design)
+
+# Normalize data
+ups_norm <- ups %>%
+  psrn("identifier")
+```
+Since we will be doing imputation for Baldur and each time we run limma; we first infer the imputation paramters.
+
+```{r imp_pars}
+ups_imp_pars <- get_imputation_pars(ups_norm, ups_design, sd_p ~ mean, workers)
+```
+
+First we will run the limma based models.
+To this end, we will first estimate the trend partitioing for the data.
+
+```{r, trend_part}
+ups_grid <- ups_norm %>%
+  calculate_mean_sd_trends(ups_design, sdev = "sample") %>%
+  grid_search(ups_design, workers = workers, n_h1 = 20, n_h2 = 20)
+# Look at the top parameters
+ups_grid
+```
+We can then extract the dataset with the highest score.
+```{r, score}
+ups_part <- ups_grid$clustered_data[[1]]
+rm(ups_grid)
+ups_part %>%
+  plot_gamma_partition(ups_design, formula = sd ~ mean + c)
+```
+
+Next we run the multiple imputation and produce the median log$_2$-fold change and p-value which we will use in the ensemble.
+```{r, limma}
+limma_trend <- multiple_imputation_and_limma(ups_part, ups_design, ups_cont,
+                                             1000, workers, "identifier",
+                                             imp_pars = ups_imp_pars
+) %>%
+  extract_results(alpha = .05, pcor = "fdr", id_col = "identifier")
+limma_gr <- multiple_imputation_and_limma(ups_part, ups_design, ups_cont,
+                                          1000, workers, "identifier",
+                                          imp_pars = ups_imp_pars,
+                                          weights = TRUE,
+                                          formula_weights = sd ~ mean
+) %>%
+  extract_results(alpha = .05, pcor = "fdr", id_col = "identifier")
+limma_gcr <- multiple_imputation_and_limma(ups_part, ups_design, ups_cont,
+                                           1000, workers, "identifier",
+                                           imp_pars = ups_imp_pars,
+                                           weights = TRUE,
+                                           formula_weights = sd ~ mean + c
+) %>%
+  extract_results(alpha = .05, pcor = "fdr", id_col = "identifier")
+
+```
+Next we want to run the Baldur methods and to make it even we will also use the weakly informative prior so we get three of each method type.
+But first we have to do the imputation and then multi trend partitioning.
+
+```{r, baldur}
+ups_imp   <- single_imputation(ups_norm,
+                               ups_design,
+                               formula = sd_p ~ mean,
+                               workers = workers,
+                               imp_pars = ups_imp_pars
+) %>%
+  calculate_mean_sd_trends(ups_design)
+ups_imp_part <- grid_search(ups_imp,
+                            ups_design,
+                            workers = workers,
+                            n_h1 = 20, n_h2 = 20
+) %>%
+  # Get the data column
+  magrittr::use_series(clustered_data) %>%
+  # Get the first instance (i.e., highest score)
+  magrittr::extract2(1)
+gr_ups       <- fit_gamma_regression(ups_imp)
+gcr_ups      <- fit_gamma_regression(ups_imp_part, sd ~ mean + c)
+gr_baldur    <- baldur_wrapper(ups_imp,
+                             ups_design,
+                             ups_cont,
+                             gr_ups,
+                             workers = workers
+)
+gcr_baldur <- baldur_wrapper(ups_imp_part,
+                             ups_design,
+                             ups_cont,
+                             gcr_ups,
+                             workers = workers
+)
+gcr_wi_baldur <- baldur_wrapper(ups_imp_part,
+                             ups_design,
+                             ups_cont,
+                             gcr_ups,
+                             mean_prior = weakly_informative,
+                             workers = workers
+)
+```
+Now we can start adding the methods to the ensemble.
+`mavis` ensemble object is very similar to a data stack structure.
+In addition, we will strip the results of each method down to the essential columns and remove them from our global environment to save up on memory.
+```{r, ens}
+# Start a new instance of the ensemble
+ups_ens <- start_ensemble()
+ups_ens$add(
+  limma_trend, "limma-trend", "identifier", "median_p_val", "median_lfc",
+  auxilary = "none", do_rm = TRUE
+)$add(
+  limma_gr, "gr-limma", "identifier", "median_p_val", "median_lfc",
+  auxilary = "none", do_rm = TRUE
+)$add(
+  limma_gcr, "gcr-limma", "identifier", "median_p_val", "median_lfc",
+  auxilary = "none", do_rm = TRUE
+)$add(
+  gr_baldur, "gr-balur", "identifier", "err", "lfc",
+  auxilary = "none", do_rm = TRUE
+)$add(
+  gcr_baldur, "gcr-balur", "identifier", "err", "lfc",
+  auxilary = "none", do_rm = TRUE
+)$add(
+  gcr_wi_baldur, "gcr-balur-wi", "identifier", "err", "lfc",
+  auxilary = "none", do_rm = TRUE
+)
+# Available methods
+ups_ens
+```
+Then we can run the ensemble with `$run_ensemble`.
+Since I have 8 cores if I use half of the available once, I will add one more to make it nine.
+```{r, wrk}
+workers
+workers <- workers + 1
+```
+For the UPS-DS (as defined here) there are three comparisons, we could run two parallel instances each with 4 parallel chains (eight total in parellel) to speed up the process.
+But since I decided to use nine  cores, I can run three chains on three parallel instances so that all comparisons can be ran at the same time.
+```{r, run_ens}
+ups_ens_results <- ups_ens$run_ensemble(parallel_chains = 3,
+                                        parallel_runs = 3,
+                                        # Additional arguments to rstan::sample
+                                        # to adjust for running one chain less
+                                        chains = 3, iter = 2400, warmup = 1000
+)
+ups_ens_results
+```
+By default all the methods in the the stack will be ran but we can specify which methods to run with the `methods` argument.
+But, we could either `$pop` out methods back to our global environment, or we could define a subset of methods to run.
+```{r, run_spec_ens}
+# Run a limma specific ensemble
+ups_limma_ens_results <- ups_ens$run_ensemble(methods = 1:3,
+                                              parallel_chains = 3,
+                                              parallel_runs = 3,
+                                              chains = 3, iter = 2400, warmup = 1000
+)
+# Alternatively to 1:3 we could have called the methods by name
+# method = c("limma-trend", paste0(c("gr", "gcr"), "-limma"))
+# Running Baldur specific methods by first removing the limma ones
+ups_ens$pop(
+  1:3
+)
+ups_baldur_ens_results <- ups_ens$run_ensemble(parallel_chains = 3,
+                                               parallel_runs = 3,
+                                               chains = 3,
+                                               iter = 2400, warmup = 1000
+)
+```

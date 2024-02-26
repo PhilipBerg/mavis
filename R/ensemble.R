@@ -29,8 +29,10 @@ ensemble <- R6::R6Class("Ensemble_Stack",
                           #' @param do_rm Should the variable be removed from
                           #'    its current environment? Can be useful to reduce
                           #'    memory usage and avoid the need to rm after each
-                          #'    method is added to the stack. Defaults to
-                          #'    `FALSE`.
+                          #'    method is added to the stack. `ensemble` will
+                          #'    first try to find the environment of the `data`,
+                          #'    if unsuccessful, it will try to remove it from
+                          #'    the caller environment. Defaults to `FALSE`.
                           #'
                           #' @description
                           #' Add a new method to the stack
@@ -48,7 +50,12 @@ ensemble <- R6::R6Class("Ensemble_Stack",
                               self$stack[[method]]$data <- data[c(id_col, p_col, lfc_col, comp_col, auxilary)]
                             }
                             if (do_rm) {
-                              ev  <- get(find(as.character(dq)))
+                              ev <- find(as.character(dq))
+                              if (rlang::is_empty(ev)) {
+                                ev <- rlang::caller_env()
+                              } else {
+                                ev  <- get(ev)
+                              }
                               do.call("rm", list(dq, envir = ev))
                             }
                             invisible(self)
@@ -59,8 +66,15 @@ ensemble <- R6::R6Class("Ensemble_Stack",
                           #' @param method method index (integer) or name to return
                           #' defaults to the most recently added method.
                           pop  = function(method = length(self$stack)) {
-                            out <- self$stack[[method]]$data
-                            self$stack[[method]] <- NULL
+                            if (length(method) == 1) {
+                               f    <- `[[`
+                              `f<-` <- `[[<-`
+                            } else {
+                               f    <- `[`
+                              `f<-` <- `[<-`
+                            }
+                            out <- f(self$stack, method)
+                            f(self$stack, method) <- NULL
                             out
                           },
                           #' @description
@@ -83,7 +97,7 @@ ensemble <- R6::R6Class("Ensemble_Stack",
                           #'    p-value. Column names will default to the first
                           #'    method in the stack.
                           run_ensemble = function(methods = "all", parallel_chains = 1, parallel_runs = 1, ...) {
-                            if (methods == "all") methods <- names(self$stack)
+                            if (length(methods) == 1) if(methods == "all") methods <- names(self$stack)
                             col_names <- self$stack[methods][[1]][1:4]
                             stn_data <- private$make_stan_inputs(methods)
                             id_order <- private$standardize_data(methods, simplify = TRUE)$id

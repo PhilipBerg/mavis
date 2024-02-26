@@ -23,7 +23,7 @@ See the vignettes for examples:
 
 ``` r
 library(mavis)
-## See vignets for examples
+## See vignettes for examples
 vignette("Baldur-Tutorial")               # For running Baldur
 vignette("Multiple Imputation and limma") # For running multiple imputation and limma
 vignette("Ensemble Tutorial")             # For running the ensemble method

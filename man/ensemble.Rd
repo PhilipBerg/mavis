@@ -109,8 +109,10 @@ columns (other than the forementioned).}
 \item{\code{do_rm}}{Should the variable be removed from
 its current environment? Can be useful to reduce
 memory usage and avoid the need to rm after each
-method is added to the stack. Defaults to
-\code{FALSE}.}
+method is added to the stack. \code{ensemble} will
+first try to find the environment of the \code{data},
+if unsuccessful, it will try to remove it from
+the caller environment. Defaults to \code{FALSE}.}
 }
 \if{html}{\out{</div>}}
 }

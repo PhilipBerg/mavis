@@ -69,12 +69,15 @@ run_limma <- function(data,
   row_names <- data[[id_col]]
   condi <- design %>%
     get_conditions()
+  c_col <- data %>%
+    dplyr::select(dplyr::any_of('c'))
   data <- data %>%
-    dplyr::select(tidyr::matches(condi), dplyr::any_of('c')) %>%
+    dplyr::select(tidyr::matches(condi)) %>%
     as.data.frame()
   rownames(data) <- row_names
   # Run LIMMA
   if (!is.null(gamma_reg_model)) {
+    data <- dplyr::bind_cols(data, c_col)
     weights <- calc_weights(data, id_col, design, gamma_reg_model)
     rownames(weights) <- row_names
     trend <- FALSE

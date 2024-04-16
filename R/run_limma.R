@@ -79,7 +79,7 @@ run_limma <- function(data,
     rownames(weights) <- row_names
     trend <- FALSE
   } else if (!is.null(weights)) {
-    if((dim(weights) != dim(data))){
+    if(any(dim(weights) != dim(data))){
       msg <- "Incorect dimensions between data and weights."
       incorrect_dims <- which(dim(weights) != dim(data))
       for (i in seq_along(incorrect_dims)) {

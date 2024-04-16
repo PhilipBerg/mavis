@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ensemble Tutorial • mavis</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
@@ -164,8 +164,8 @@ estimate the trend partitioing for the data.</p>
 <code class="sourceCode R"><span><span class="va">ups_grid</span> <span class="op">&lt;-</span> <span class="va">ups_norm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="../reference/calculate_mean_sd_trends.html">calculate_mean_sd_trends</a></span><span class="op">(</span><span class="va">ups_design</span>, sdev <span class="op">=</span> <span class="st">"sample"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="../reference/grid_search.html">grid_search</a></span><span class="op">(</span><span class="va">ups_design</span>, workers <span class="op">=</span> <span class="va">workers</span>, n_h1 <span class="op">=</span> <span class="fl">20</span>, n_h2 <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
-<div class="figure">
-<img src="trend_part-1.png" alt=""><p class="caption">plot of chunk trend_part</p>
+<div class="float">
+<img src="trend_part-1.png" alt="plot of chunk trend_part"><div class="figcaption">plot of chunk trend_part</div>
 </div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Look at the top parameters</span></span>
@@ -190,8 +190,8 @@ estimate the trend partitioing for the data.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="va">ups_grid</span><span class="op">)</span></span>
 <span><span class="va">ups_part</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="../reference/plot_gamma_partition.html">plot_gamma_partition</a></span><span class="op">(</span><span class="va">ups_design</span>, formula <span class="op">=</span> <span class="va">sd</span> <span class="op">~</span> <span class="va">mean</span> <span class="op">+</span> <span class="va">c</span><span class="op">)</span></span></code></pre></div>
-<div class="figure">
-<img src="score-1.png" alt=""><p class="caption">plot of chunk score</p>
+<div class="float">
+<img src="score-1.png" alt="plot of chunk score"><div class="figcaption">plot of chunk score</div>
 </div>
 <p>Next we run the multiple imputation and produce the median log<span class="math inline">\(_2\)</span>-fold change and p-value which we will
 use in the ensemble.</p>
@@ -236,8 +236,8 @@ partitioning.</p>
 <span>  <span class="fu">magrittr</span><span class="fu">::</span><span class="fu"><a href="https://magrittr.tidyverse.org/reference/aliases.html" class="external-link">use_series</a></span><span class="op">(</span><span class="va">clustered_data</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="co"># Get the first instance (i.e., highest score)</span></span>
 <span>  <span class="fu">magrittr</span><span class="fu">::</span><span class="fu"><a href="https://magrittr.tidyverse.org/reference/aliases.html" class="external-link">extract2</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<div class="figure">
-<img src="baldur-1.png" alt=""><p class="caption">plot of chunk baldur</p>
+<div class="float">
+<img src="baldur-1.png" alt="plot of chunk baldur"><div class="figcaption">plot of chunk baldur</div>
 </div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gr_ups</span>       <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/baldur/man/fit_gamma_regression.html" class="external-link">fit_gamma_regression</a></span><span class="op">(</span><span class="va">ups_imp</span><span class="op">)</span></span>
@@ -370,7 +370,7 @@ time.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.8.</p>
 </div>
 
       </footer>

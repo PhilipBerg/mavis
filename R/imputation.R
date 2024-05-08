@@ -71,7 +71,7 @@ get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1
     )
     doParallel::registerDoParallel(cl)
   }
-  dif <- vector()
+  dif <- numeric()
   n_diff <- Inf
 
   imp_mat <- data %>%
@@ -98,6 +98,7 @@ get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1
 
   while (TRUE) {
     tic <- Sys.time()
+    den <- num <- 0
     for(i in names(mis_vals)) {
       form <- formula(
         paste0(i, '~ .')
@@ -111,18 +112,21 @@ get_imputation_pars <- function(data, design, formula = sd_p ~ mean, workers = 1
         stats::predict(dplyr::slice(imp_mat, idx)) %>%
         magrittr::use_series(predictions)
 
-      dif[i] <- sum(
+      den <- den + sum(
         (imp_mat[idx,i] - pred)^2
-      ) / sum(pred^2)
+      )
+
+      num <- num + sum(pred^2)
 
       data[idx,i] <- imp_mat[idx,i] <- pred
     }
-    if (n_diff > sum(dif)) {
+    dif <- den / num
+    if (n_diff > dif) {
       cat(
         'Previous error:', n_diff, '\t>\tCurrent error:', sum(dif), '\n'
       )
 
-      n_diff <- sum(dif)
+      n_diff <- dif
       imp_out <- data
       print_it_time(tic)
     } else {

@@ -51,7 +51,7 @@ estimate_beta.glm <- function(reg, mean, c, alpha, ...){
   reg_vars <- reg %>%
     formula() %>%
     all.vars()
-  reg_vars <- reg_vars[!reg_vars %in% c("mean", "sd")]
+  reg_vars <- reg_vars[!reg_vars %in% c("mean", "sd", "sd_p")]
   if (length(reg_vars) == 0) {
     reg_vars <- "newdata = data.frame(mean = mean)"
   } else {

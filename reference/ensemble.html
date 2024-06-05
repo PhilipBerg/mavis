@@ -89,7 +89,6 @@ the ensemble.</p></dd>
 <span>  <span class="va">method</span>,</span>
 <span>  <span class="va">id_col</span>,</span>
 <span>  <span class="va">p_col</span>,</span>
-<span>  <span class="va">lfc_col</span>,</span>
 <span>  comp_col <span class="op">=</span> <span class="st">"comparison"</span>,</span>
 <span>  auxilary <span class="op">=</span> <span class="st">"rest"</span>,</span>
 <span>  do_rm <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -156,12 +155,7 @@ defaults to the most recently added method.</p></dd>
 <h3 id="method-run-ensemble-">Method <code>run_ensemble()</code><a class="anchor" aria-label="anchor" href="#method-run-ensemble-"></a></h3>
 <p>Run the ensemble</p><div class="section">
 <h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ensemble</span><span class="op">$</span><span class="fu">run_ensemble</span><span class="op">(</span></span>
-<span>  methods <span class="op">=</span> <span class="st">"all"</span>,</span>
-<span>  parallel_chains <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  parallel_runs <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  <span class="va">...</span></span>
-<span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ensemble</span><span class="op">$</span><span class="fu">run_ensemble</span><span class="op">(</span>methods <span class="op">=</span> <span class="st">"all"</span>, workers <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -171,18 +165,10 @@ defaults to the most recently added method.</p></dd>
 ensemble.</p></dd>
 
 
-<dt><code>parallel_chains</code></dt>
+<dt><code>workers</code></dt>
 <dd><p>Number of parallel workers
-to use when running the sampling.</p></dd>
-
-
-<dt><code>parallel_runs</code></dt>
-<dd><p>The number of parallel
-comparison to run at the same time. Note that
-the total number of parallel instances will be
-<code>parallel_chains</code>\(\times\)<code>parallel_runs</code>.
-Can be efficient when there are many comparisons
-to run.</p></dd>
+to use when running the ensemble. Can at most
+use one for each compario</p></dd>
 
 
 <dt><code>...</code></dt>
@@ -269,8 +255,18 @@ method in the stack.</p>
 <span class="r-in"><span><span class="op">)</span><span class="op">$</span><span class="fu">add</span><span class="op">(</span></span></span>
 <span class="r-in"><span>   <span class="va">limma_trend</span>, <span class="st">"limma-trend"</span>, <span class="st">"identifier"</span>, <span class="st">"p_val"</span>, <span class="st">"lfc"</span>, do_rm <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">ensemble_results</span> <span class="op">&lt;-</span> <span class="va">new_ensemble</span><span class="op">$</span><span class="fu">run_ensemble</span><span class="op">(</span>iter <span class="op">=</span> <span class="fl">150</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in new_ensemble$run_ensemble(iter = 150):</span> unused argument (iter = 150)</span>
+<span class="r-in"><span><span class="va">ensemble_results</span> <span class="op">&lt;-</span> <span class="va">new_ensemble</span><span class="op">$</span><span class="fu">run_ensemble</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ..cutHeight not given, setting it to 91.3  ===&gt;  99% of the (truncated) height range in dendro.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ..done.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There was 1 warning in `dplyr::mutate()`.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> In argument: `data = purrr::map2(data, w, private$ensemble)`.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> Caused by warning:</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> There were 2 warnings in `dplyr::mutate()`.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> The first warning was:</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> In argument: `w = purrr::map(tm, private$find_sd)`.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> Caused by warning in `rgl.init()`:</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> RGL: unable to open X11 display</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.</span>
 <span class="r-in"><span><span class="va">limma_gr</span> <span class="op">&lt;-</span> <span class="va">new_ensemble</span><span class="op">$</span><span class="fu">pop</span><span class="op">(</span><span class="st">"limma_gr"</span><span class="op">)</span></span></span>
 </code></pre></div>
     </div>

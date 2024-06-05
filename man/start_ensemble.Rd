@@ -53,6 +53,6 @@ new_ensemble$add(limma_gr, "GR-limma", "identifier", "p_val", "lfc", do_rm = TRU
 )$add(
    limma_trend, "limma-trend", "identifier", "p_val", "lfc", do_rm = TRUE
 )
-ensemble_results <- new_ensemble$run_ensemble(iter = 150)
+ensemble_results <- new_ensemble$run_ensemble()
 limma_gr <- new_ensemble$pop("limma_gr")
 }

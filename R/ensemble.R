@@ -81,20 +81,18 @@ ensemble <- R6::R6Class("Ensemble_Stack",
                           #'
                           #' @param methods Which methods to include in the
                           #'    ensemble.
-                          #' @param parallel_chains Number of parallel workers
-                          #'    to use when running the sampling.
-                          #' @param parallel_runs The number of parallel
-                          #'    comparison to run at the same time. Note that
-                          #'    the total number of parallel instances will be
-                          #'    `parallel_chains`\eqn{\times}`parallel_runs`.
-                          #'    Can be efficient when there are many comparisons
-                          #'    to run.
+                          #' @param workers Number of parallel workers
+                          #'    to use when running the ensemble. Can at most
+                          #'    use one for each comparison.
                           #' @param ... Additional parameters to
                           #'    [rstan::sampling].
                           #'
                           #' @return A [tibble::tibble] with the ensembled
-                          #'    p-value. Column names will default to the first
-                          #'    method in the stack.
+                          #'    p-value (column called mavis). Column names will
+                          #'    default to the first method in the stack.
+                          #'    Additionally, two columns tm and w, will represent
+                          #'    the CTMC transition matrix and the stationary
+                          #'    distribution (weights).
                           run_ensemble = function(methods = "all", workers = 1) {
                             if(methods == "all") methods <- names(self$stack)
                             if (length(methods) == 1) rlang::abort("Need at least two methods to run the ensemble")
@@ -395,14 +393,14 @@ ensemble$set(
     t(dt) %>%
       rbind(1) %>%
       matlib::gaussianElimination(c(rep(0, ndt), 1), fractions = F) %>%
-      magrittr::extract(- (ndt + 1), ndt + 1) %>%
+      magrittr::extract(-(ndt + 1), ndt + 1) %>%
       setNames(colnames(dt))
   }
 )
 
 
 ensemble$set(
-  "private", "p_err", function (alpha, x, y) {
+  "private", "p_err", function(alpha, x, y) {
     if (all(x == y)) return(0)
     p   <- y < alpha
     p_x <- x < alpha

@@ -48,7 +48,7 @@ new_ensemble$add(limma_gr, "GR-limma", "identifier", "p_val", "lfc", do_rm = TRU
 )$add(
    limma_trend, "limma-trend", "identifier", "p_val", "lfc", do_rm = TRUE
 )
-ensemble_results <- new_ensemble$run_ensemble(iter = 150)
+ensemble_results <- new_ensemble$run_ensemble()
 limma_gr <- new_ensemble$pop("limma_gr")
 }
 \section{Public fields}{
@@ -80,7 +80,6 @@ Add a new method to the stack
   method,
   id_col,
   p_col,
-  lfc_col,
   comp_col = "comparison",
   auxilary = "rest",
   do_rm = FALSE
@@ -141,12 +140,7 @@ defaults to the most recently added method.}
 \subsection{Method \code{run_ensemble()}}{
 Run the ensemble
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ensemble$run_ensemble(
-  methods = "all",
-  parallel_chains = 1,
-  parallel_runs = 1,
-  ...
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{ensemble$run_ensemble(methods = "all", workers = 1)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -155,15 +149,9 @@ Run the ensemble
 \item{\code{methods}}{Which methods to include in the
 ensemble.}
 
-\item{\code{parallel_chains}}{Number of parallel workers
-to use when running the sampling.}
-
-\item{\code{parallel_runs}}{The number of parallel
-comparison to run at the same time. Note that
-the total number of parallel instances will be
-\code{parallel_chains}\eqn{\times}\code{parallel_runs}.
-Can be efficient when there are many comparisons
-to run.}
+\item{\code{workers}}{Number of parallel workers
+to use when running the ensemble. Can at most
+use one for each compario}
 
 \item{\code{...}}{Additional parameters to
 \link[rstan:stanmodel-method-sampling]{rstan::sampling}.}

@@ -14,8 +14,6 @@
 #' @aliases mavis
 #' @import methods
 #' @import Rcpp
-#' @importFrom rstan sampling
-#' @useDynLib mavis
 ## usethis namespace: start
 #' @importFrom baldur empirical_bayes
 #' @importFrom baldur fit_gamma_regression

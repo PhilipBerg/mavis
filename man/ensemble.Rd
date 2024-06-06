@@ -151,7 +151,7 @@ ensemble.}
 
 \item{\code{workers}}{Number of parallel workers
 to use when running the ensemble. Can at most
-use one for each compario}
+use one for each comparison.}
 
 \item{\code{...}}{Additional parameters to
 \link[rstan:stanmodel-method-sampling]{rstan::sampling}.}
@@ -160,8 +160,11 @@ use one for each compario}
 }
 \subsection{Returns}{
 A \link[tibble:tibble]{tibble::tibble} with the ensembled
-p-value. Column names will default to the first
-method in the stack.
+p-value (column called mavis). Column names will
+default to the first method in the stack.
+Additionally, two columns tm and w, will represent
+the CTMC transition matrix and the stationary
+distribution (weights).
 }
 }
 \if{html}{\out{<hr>}}

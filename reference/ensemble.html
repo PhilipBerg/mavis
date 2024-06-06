@@ -168,7 +168,7 @@ ensemble.</p></dd>
 <dt><code>workers</code></dt>
 <dd><p>Number of parallel workers
 to use when running the ensemble. Can at most
-use one for each compario</p></dd>
+use one for each comparison.</p></dd>
 
 
 <dt><code>...</code></dt>
@@ -181,8 +181,11 @@ rstan::sampling.</p></dd>
 <div class="section">
 <h4 id="returns">Returns<a class="anchor" aria-label="anchor" href="#returns"></a></h4>
 <p>A <a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble::tibble</a> with the ensembled
-p-value. Column names will default to the first
-method in the stack.</p>
+p-value (column called mavis). Column names will
+default to the first method in the stack.
+Additionally, two columns tm and w, will represent
+the CTMC transition matrix and the stationary
+distribution (weights).</p>
 </div>
 
 </div><p></p><hr><a id="method-Ensemble_Stack-print"></a><div class="section">

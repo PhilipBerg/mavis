@@ -10,7 +10,7 @@
 
 ## Installation
 
-You can install the development version of `mavis` as follows:
+You can install the developmental version of `mavis` as follows:
 
 ``` r
 require(devtools)
